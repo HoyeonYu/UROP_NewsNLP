@@ -14,7 +14,7 @@ def check_exists_by_xpath(xpath):
 
 def getNatePannData():
     url = 'https://pann.nate.com/talk/ranking/m?stdt='
-    search_period_month = 24
+    search_period_month = 60
     start_period = 202105
     find_period = start_period
 

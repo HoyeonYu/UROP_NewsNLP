@@ -15,8 +15,8 @@ def check_exists_by_xpath(xpath):
 
 def getNaverNewsData():
     url = 'https://news.naver.com/main/ranking/popularDay.nhn?date='
-    search_period_num = 40
-    start_period = 20210624
+    search_period_num = 100
+    start_period = 20210625
     find_period = start_period
     title_list = []
     description_list = []
@@ -54,7 +54,7 @@ def getNaverNewsData():
 
             cnt += 1
 
-        find_period -= 4
+        find_period -= 2
 
         if find_period % 100 == 0 or find_period % 100 > 28:
             find_period -= 72

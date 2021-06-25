@@ -13,7 +13,7 @@ def check_exists_by_xpath(xpath):
 
 def getRuliWebData():
     url = 'https://bbs.ruliweb.com/best/selection?orderby=readcount&range=30d&page='
-    search_page_num = 40
+    search_page_num = 100
     title_list = []
     description_list = []
 

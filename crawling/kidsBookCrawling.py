@@ -1,11 +1,10 @@
-import time
-
 import pandas as pd
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 
 driver = webdriver.Chrome('C:\\chromeDriver\\chromedriver.exe')
 
+driver.implicitly_wait(0.2)
 
 def check_exists_by_xpath(xpath):
     try:
@@ -18,7 +17,7 @@ def check_exists_by_xpath(xpath):
 def getKidsBookData():
     url = 'http://book.interpark.com/display/collectlist.do?_method=BestsellerHourNew201605&bestTp=1&dispNo=028008#'
 
-    search_period_num = 80
+    search_period_num = 200
     start_period = 2021050
     find_period = start_period
     title_list = []
@@ -29,8 +28,6 @@ def getKidsBookData():
         driver.find_element_by_xpath('//*[@id="cateTabId3"]/a').click()
         driver.execute_script('goBestMonth(\'28\',\'' + str(find_period) + '\',\'monthSch\')')
         href_list = []
-
-        time.sleep(2.5)
 
         for book_idx in range(15):
             if check_exists_by_xpath('//*[@id="content"]/div[3]/div[3]/div[2]/div/div[1]/ol/\
