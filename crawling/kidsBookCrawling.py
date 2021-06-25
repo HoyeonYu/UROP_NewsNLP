@@ -3,8 +3,7 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 
 driver = webdriver.Chrome('C:\\chromeDriver\\chromedriver.exe')
-
-driver.implicitly_wait(0.2)
+driver.implicitly_wait(3)
 
 def check_exists_by_xpath(xpath):
     try:
