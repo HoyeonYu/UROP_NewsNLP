@@ -3,7 +3,7 @@ import pandas as pd
 import re
 
 
-def preprocess_sentence(sentence):
+def preprocess_sentence(sentence, isTitle):
     stop_words = '아 휴 아이구 아이쿠 아이고 어 나 우리 저희 따라 의해 을 를 에 의 가' \
                  '으로 로 에게 뿐이다 의거하여 근거하여 입각하여 기준으로' \
                  '예하면 예를 들면 예를 들자면 저 소인 소생 저희 지말고' \
@@ -69,7 +69,11 @@ def preprocess_sentence(sentence):
     sentence = re.sub(r'\[[^)]*]', '', sentence)
     sentence = re.sub('[^가-힣]', ' ', sentence)
 
-    tokens = ' '.join(word for word in sentence.split() if not word in stop_words if len(word) > 1)
+    if isTitle:
+        tokens = ' '.join(word for word in sentence.split() if len(word) > 1)
+
+    else:
+        tokens = ' '.join(word for word in sentence.split() if not word in stop_words if len(word) > 1)
 
     return tokens
 
@@ -82,14 +86,15 @@ csv_read_list = ['D:/study/python/UROP/crawling/crawled_naverNews.csv',
                  'D:/study/python/UROP/crawling/crawled_kidsBook.csv',
                  'D:/study/python/UROP/crawling/crawled_kidsSong.csv']
 
-csv_save_list = ['preprocessed_naverNews.csv',
-                 'preprocessed_ruliWeb.csv',
-                 'preprocessed_natePann.csv',
-                 'preprocessed_kidsBook.csv', ]
+csv_save_list = ['D:/study/python/UROP/preprocessing/preprocessed_naverNews.csv',
+                 'D:/study/python/UROP/preprocessing/preprocessed_ruliWeb.csv',
+                 'D:/study/python/UROP/preprocessing/preprocessed_natePann.csv',
+                 'D:/study/python/UROP/preprocessing/preprocessed_kidsBook.csv',
+                 'D:/study/python/UROP/preprocessing/preprocessed_kidsSong.csv']
 
 for idx in range(len(csv_read_list)):
     print('======================================================')
-    print('Read -> ', csv_save_list[idx], '\n')
+    print('Read -> ', csv_read_list[idx], '\n')
     data = pd.read_csv(csv_read_list[idx], nrows=100000)
     print('Initial,\tLength:', (len(data)))
 
@@ -104,11 +109,11 @@ for idx in range(len(csv_read_list)):
 
     titleDF = []
     for title in data['제목']:
-        titleDF.append(preprocess_sentence(title))
+        titleDF.append(preprocess_sentence(title, True))
 
     contentsDF = []
     for contents in data['내용']:
-        contentsDF.append(preprocess_sentence(contents))
+        contentsDF.append(preprocess_sentence(contents, False))
 
     dataFrame = []
     dataFrame = pd.DataFrame(dataFrame, columns=['title', 'contents'])
