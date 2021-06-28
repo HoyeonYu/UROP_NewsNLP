@@ -14,8 +14,8 @@ csv_save_list = ['D:/study/python/UROP/analyzing/analyzed_naverNews.csv',
                  'D:/study/python/UROP/analyzing/analyzed_kidsBook.csv',
                  'D:/study/python/UROP/analyzing/analyzed_kidsSong.csv']
 
-title_max_len = [4, 10, 12, 20, 5]
-contents_max_len = [1500, 1000, 1000, 700, 180]
+title_max_len = [14, 10, 12, 20, 5]
+contents_max_len = [1500, 300, 1000, 700, 180]
 
 for idx in range(len(csv_read_list)):
     print('======================================================')
@@ -53,12 +53,15 @@ for idx in range(len(csv_read_list)):
     plt.xlabel('length of samples')
     plt.ylabel('number of samples')
     # plt.show()
-    print('======================================================')
 
+    print('Before Drop Big Size, Length: ', (len(data)))
     data = data[data['title'].apply(lambda x: len(x.split()) <= title_max_len[idx])]
     data = data[data['contents'].apply(lambda x: len(x.split()) <= contents_max_len[idx])]
+    print('After Drop Big Size, Length: ', (len(data)))
 
     data['decoder_input'] = data['title'].apply(lambda x: 'sostoken ' + x)
     data['decoder_target'] = data['title'].apply(lambda x: x + ' eostoken')
 
     data.to_csv(csv_save_list[idx], encoding='utf-8-sig', index=True)
+
+    print('======================================================')
