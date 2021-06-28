@@ -14,8 +14,12 @@ csv_save_list = ['D:/study/python/UROP/analyzing/analyzed_naverNews.csv',
                  'D:/study/python/UROP/analyzing/analyzed_kidsBook.csv',
                  'D:/study/python/UROP/analyzing/analyzed_kidsSong.csv']
 
-title_max_len = [14, 10, 12, 20, 5]
-contents_max_len = [1500, 300, 1000, 700, 180]
+csv_save_concat_list = ['D:/study/python/UROP/analyzing/concatenated_neutral.csv',
+                        'D:/study/python/UROP/analyzing/concatenated_clicked.csv',
+                        'D:/study/python/UROP/analyzing/concatenated_kids.csv']
+
+title_max_len = [14, 12, 12, 20, 20]
+contents_max_len = [1500, 1000, 1000, 700, 700]
 
 for idx in range(len(csv_read_list)):
     print('======================================================')
@@ -62,6 +66,17 @@ for idx in range(len(csv_read_list)):
     data['decoder_input'] = data['title'].apply(lambda x: 'sostoken ' + x)
     data['decoder_target'] = data['title'].apply(lambda x: x + ' eostoken')
 
-    data.to_csv(csv_save_list[idx], encoding='utf-8-sig', index=True)
+    data.to_csv(csv_save_list[idx], encoding='utf-8-sig', index=False)
+    if idx == 0:
+        data.to_csv(csv_save_concat_list[0], encoding='utf-8-sig', index=True)
 
     print('======================================================')
+
+for idx in range(2):
+    print(csv_save_list[(idx * 2) + 1])
+    print(csv_save_list[(idx * 2) + 2])
+    dataClick1 = pd.read_csv(csv_save_list[(idx * 2) + 1], nrows=100000)
+    dataClick2 = pd.read_csv(csv_save_list[(idx * 2) + 2], nrows=100000)
+
+    dataClick1 = pd.concat([dataClick1, dataClick2])
+    dataClick1.to_csv(csv_save_concat_list[idx + 1], encoding='utf-8-sig', index=True)
