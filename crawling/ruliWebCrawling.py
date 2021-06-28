@@ -63,7 +63,7 @@ def getRuliWebData():
     }
 
     ruliWebDf = pd.DataFrame(ruliWebDic)
-    ruliWebDf.to_csv('ruliWebHot.csv', encoding='utf-8-sig', index=True)
+    ruliWebDf.to_csv('crawled_ruliWeb.csv', encoding='utf-8-sig', index=True)
 
     driver.close()
 

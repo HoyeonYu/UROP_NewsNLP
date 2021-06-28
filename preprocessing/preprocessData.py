@@ -76,10 +76,11 @@ def preprocess_sentence(sentence):
 
 np.random.seed(seed=0)
 
-csv_read_list = ['D:/study/python/UROP/crawling/naverNewsHot.csv',
-                 'D:/study/python/UROP/crawling/ruliWebHot.csv',
-                 'D:/study/python/UROP/crawling/natePannHot.csv',
-                 'D:/study/python/UROP/crawling/kidsBookHot.csv']
+csv_read_list = ['D:/study/python/UROP/crawling/crawled_naverNews.csv',
+                 'D:/study/python/UROP/crawling/crawled_ruliWeb.csv',
+                 'D:/study/python/UROP/crawling/crawled_natePann.csv',
+                 'D:/study/python/UROP/crawling/crawled_kidsBook.csv',
+                 'D:/study/python/UROP/crawling/crawled_kidsSong.csv']
 
 csv_save_list = ['preprocessed_naverNews.csv',
                  'preprocessed_ruliWeb.csv',
@@ -123,7 +124,7 @@ for idx in range(len(csv_read_list)):
     print('After Drop Less than 10, Data Length: ', len(dataFrame))
     print('\nFinal Len:\t', len(dataFrame))
 
-    dataFrame.to_csv(csv_save_list[idx])
+    dataFrame.to_csv(csv_save_list[idx], encoding='utf-8-sig', index=True)
 
     print('\nDone -> ', csv_save_list[idx])
     print('======================================================\n')

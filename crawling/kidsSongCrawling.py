@@ -55,7 +55,7 @@ def getKidsSongData():
     }
 
     naverNewsDf = pd.DataFrame(kidsSongDic)
-    naverNewsDf.to_csv('kidsSongHot.csv', encoding='utf-8-sig', index=True)
+    naverNewsDf.to_csv('crawled_kidsSong.csv', encoding='utf-8-sig', index=True)
 
     driver.close()
 

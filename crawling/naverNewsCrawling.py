@@ -68,7 +68,7 @@ def getNaverNewsData():
     }
 
     naverNewsDf = pd.DataFrame(naverNewsDic)
-    naverNewsDf.to_csv('naverNewsHot.csv', encoding='utf-8-sig', index=True)
+    naverNewsDf.to_csv('crawled_naverNews.csv', encoding='utf-8-sig', index=True)
 
     driver.close()
 

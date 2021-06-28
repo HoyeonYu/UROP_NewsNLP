@@ -66,7 +66,7 @@ def getNatePannData():
     }
 
     natePannDf = pd.DataFrame(natePannDic)
-    natePannDf.to_csv('natePannHot.csv', encoding='utf-8-sig', index=True)
+    natePannDf.to_csv('crawled_natePann.csv', encoding='utf-8-sig', index=True)
 
     driver.close()
 

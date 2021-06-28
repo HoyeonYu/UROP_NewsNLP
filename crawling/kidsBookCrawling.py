@@ -78,7 +78,7 @@ def getKidsBookData():
     }
 
     kidsBookDf = pd.DataFrame(kidsBookDic)
-    kidsBookDf.to_csv('kidsBookHot.csv', encoding='utf-8-sig', index=True)
+    kidsBookDf.to_csv('crawled_kidsBook.csv', encoding='utf-8-sig', index=True)
 
     driver.close()
 
