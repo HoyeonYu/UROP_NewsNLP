@@ -19,7 +19,7 @@ csv_save_concat_list = ['D:/study/python/UROP/analyzing/concatenated_neutral.csv
                         'D:/study/python/UROP/analyzing/concatenated_kids.csv']
 
 title_max_len = [14, 12, 12, 20, 20]
-contents_max_len = [1500, 1000, 1000, 700, 700]
+contents_max_len = [500, 1000, 1000, 700, 700]
 
 for idx in range(len(csv_read_list)):
     print('======================================================')
@@ -40,23 +40,12 @@ for idx in range(len(csv_read_list)):
     plt.subplot(1, 2, 1)
     plt.boxplot(title_len)
     plt.title('Title')
+
     plt.subplot(1, 2, 2)
     plt.boxplot(contents_len)
     plt.title('Contents')
     plt.tight_layout()
-    # plt.show()
-
-    plt.title('Title')
-    plt.hist(title_len, bins=40)
-    plt.xlabel('length of samples')
-    plt.ylabel('number of samples')
-    # plt.show()
-
-    plt.title('Contents')
-    plt.hist(contents_len, bins=40)
-    plt.xlabel('length of samples')
-    plt.ylabel('number of samples')
-    # plt.show()
+    plt.show()
 
     print('Before Drop Big Size, Length: ', (len(data)))
     data = data[data['title'].apply(lambda x: len(x.split()) <= title_max_len[idx])]
