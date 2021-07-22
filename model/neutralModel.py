@@ -136,8 +136,8 @@ decoder_input_test = pad_sequences(decoder_input_test, maxlen=title_pad_len)
 decoder_target_test = pad_sequences(decoder_target_test, maxlen=title_pad_len)
 
 ''''''''''''''''''''' Build Model '''''''''''''''''''''
-embedding_dim_list = [32, 64, 128, 256]
-hidden_size_list = [32, 64, 128, 256]
+embedding_dim_list = [64, 128, 256]
+hidden_size_list = [32, 64, 128]
 
 
 def model_encoder_1_decoder_1():
@@ -172,7 +172,6 @@ def model_encoder_1_decoder_1():
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
                              batch_size=256, callbacks=[early_stopping_callback], epochs=50)
 
-    model.save('neutral/e1d1_emb%dhid%d.h5' % (embedding_dim, hidden_size))
     return history_e1d1
 
 
@@ -214,7 +213,6 @@ def model_encoder_1_decoder_3():
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
                              batch_size=256, callbacks=[early_stopping_callback], epochs=50)
 
-    model.save('neutral/e1d3_emb%dhid%d.h5' % (embedding_dim, hidden_size))
     return history_e1d3
 
 
@@ -256,7 +254,6 @@ def model_encoder_3_decoder_1():
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
                              batch_size=256, callbacks=[early_stopping_callback], epochs=50)
 
-    model.save('neutral/e3d1_emb%dhid%d.h5' % (embedding_dim, hidden_size))
     return history_e3d1
 
 
@@ -304,7 +301,6 @@ def model_encoder_3_decoder_3():
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
                              batch_size=256, callbacks=[early_stopping_callback], epochs=50)
 
-    model.save('neutral/e3d3_emb%dhid%d.h5' % (embedding_dim, hidden_size))
     return history_e3d3
 
 

@@ -162,7 +162,7 @@ model.compile(optimizer='rmsprop', loss='sparse_categorical_crossentropy')
 early_stopping_callback = EarlyStopping(monitor='val_loss', patience=10)
 model.fit(x=[encoder_input_train, decoder_input_train], y=decoder_target_train,
           validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
-          batch_size=256, callbacks=[early_stopping_callback], epochs=6)
+          batch_size=256, callbacks=[early_stopping_callback], epochs=20)
 model.summary()
 
 ''''''''''''''''''''' Test Model '''''''''''''''''''''
@@ -194,20 +194,18 @@ def decode_sequence(input_seq):
     target_seq = np.zeros((1, 1))
     target_seq[0, 0] = title_word_to_index['sostoken']
 
-    stop_condition = False
-    decoded_sentence = ''
+    decoded_sentence = ' '
 
-    while not stop_condition:
+    while True:
         output_tokens, h, c = decoder_model.predict([target_seq] + states_value)
         sampled_token_index = np.argmax(output_tokens[0, -1, :])
         sampled_token = title_index_to_word[sampled_token_index + 1]
-        print('idx:', sampled_token_index, ', word:', sampled_token)
 
-        if sampled_token == 'eostoken' or len(decoded_sentence.split()) > title_pad_len - 1:
-            stop_condition = True
+        if sampled_token == 'eostoken' or len(decoded_sentence.split(' ')) > title_pad_len - 1:
+            break
 
         else:
-            decoded_sentence += sampled_token
+            decoded_sentence += sampled_token + ' '
 
         target_seq = np.zeros((1, 1))
         target_seq[0, 0] = sampled_token_index
@@ -234,7 +232,7 @@ def seq2summary(input_seq):
 
 
 for i in range(500, 600):
-    print("원문 : ", seq2text(encoder_input_test[i]))
-    print("실제 요약문 :", seq2summary(decoder_input_test[i]))
-    print("예측 요약문 :", decode_sequence(encoder_input_test[i].reshape(1, contents_pad_len)))
+    print("뉴스 전문 : ", seq2text(encoder_input_test[i]))
+    print("실제 뉴스 제목 :", seq2summary(decoder_input_test[i]))
+    print("예측 뉴스 제목 :", decode_sequence(encoder_input_test[i].reshape(1, contents_pad_len)))
     print("\n")
