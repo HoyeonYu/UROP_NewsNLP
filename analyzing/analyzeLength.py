@@ -2,24 +2,26 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-csv_read_list = ['D:/study/python/UROP/preprocessing/preprocessed_naverNews.csv',
-                 'D:/study/python/UROP/preprocessing/preprocessed_ruliWeb.csv',
-                 'D:/study/python/UROP/preprocessing/preprocessed_natePann.csv',
-                 'D:/study/python/UROP/preprocessing/preprocessed_kidsBook.csv',
-                 'D:/study/python/UROP/preprocessing/preprocessed_kidsSong.csv']
+csv_read_list = ['D:/study/python/UROP/preprocessing/preprocessed_dropMin_naverNews.csv',
+                 # 'D:/study/python/UROP/preprocessing/preprocessed_ruliWeb.csv',
+                 # 'D:/study/python/UROP/preprocessing/preprocessed_natePann.csv',
+                 # 'D:/study/python/UROP/preprocessing/preprocessed_kidsBook.csv',
+                 # 'D:/study/python/UROP/preprocessing/preprocessed_kidsSong.csv'
+                 ]
 
 csv_save_list = ['D:/study/python/UROP/analyzing/analyzed_naverNews.csv',
-                 'D:/study/python/UROP/analyzing/analyzed_ruliWeb.csv',
-                 'D:/study/python/UROP/analyzing/analyzed_natePann.csv',
-                 'D:/study/python/UROP/analyzing/analyzed_kidsBook.csv',
-                 'D:/study/python/UROP/analyzing/analyzed_kidsSong.csv']
+                 # 'D:/study/python/UROP/analyzing/analyzed_ruliWeb.csv',
+                 # 'D:/study/python/UROP/analyzing/analyzed_natePann.csv',
+                 # 'D:/study/python/UROP/analyzing/analyzed_kidsBook.csv',
+                 # 'D:/study/python/UROP/analyzing/analyzed_kidsSong.csv'
+                 ]
 
 csv_save_concat_list = ['D:/study/python/UROP/analyzing/concatenated_neutral.csv',
                         'D:/study/python/UROP/analyzing/concatenated_clicked.csv',
                         'D:/study/python/UROP/analyzing/concatenated_kids.csv']
 
-title_max_len = [14, 12, 12, 20, 20]
-contents_max_len = [500, 1000, 1000, 700, 700]
+title_max_len = [10, 12, 12, 20, 20]
+contents_max_len = [300, 1000, 1000, 700, 700]
 
 for idx in range(len(csv_read_list)):
     print('======================================================')
@@ -61,11 +63,11 @@ for idx in range(len(csv_read_list)):
 
     print('======================================================')
 
-for idx in range(2):
-    print(csv_save_list[(idx * 2) + 1])
-    print(csv_save_list[(idx * 2) + 2])
-    dataClick1 = pd.read_csv(csv_save_list[(idx * 2) + 1], nrows=100000)
-    dataClick2 = pd.read_csv(csv_save_list[(idx * 2) + 2], nrows=100000)
-
-    dataClick1 = pd.concat([dataClick1, dataClick2])
-    dataClick1.to_csv(csv_save_concat_list[idx + 1], encoding='utf-8-sig', index=True)
+# for idx in range(2):
+#     print(csv_save_list[(idx * 2) + 1])
+#     print(csv_save_list[(idx * 2) + 2])
+#     dataClick1 = pd.read_csv(csv_save_list[(idx * 2) + 1], nrows=100000)
+#     dataClick2 = pd.read_csv(csv_save_list[(idx * 2) + 2], nrows=100000)
+#
+#     dataClick1 = pd.concat([dataClick1, dataClick2])
+#     dataClick1.to_csv(csv_save_concat_list[idx + 1], encoding='utf-8-sig', index=True)

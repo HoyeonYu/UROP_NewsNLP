@@ -8,7 +8,7 @@ from keras.models import Model
 from keras.layers import Input, LSTM, Dense, Embedding
 
 ''''''''''''''''''''' Read Preprocessed File '''''''''''''''''''''
-csv_read_neutral = 'D:/study/python/UROP/preprocessing/preprocessed_naverNews.csv'
+csv_read_neutral = 'D:/study/python/UROP/analyzing/analyzed_naverNews.csv'
 data = pd.read_csv(csv_read_neutral)
 
 ''''''''''''''''''''' Add SOS, EOS Token in Decoder Input, Output '''''''''''''''''''''
@@ -124,8 +124,8 @@ print('Test Output Size:', len(decoder_input_test))
 print('=========================================')
 
 ''''''''''''''''''''' Pad Sequences '''''''''''''''''''''
-contents_pad_len = 500
-title_pad_len = 14
+contents_pad_len = 300
+title_pad_len = 10
 
 encoder_input_train = pad_sequences(encoder_input_train, maxlen=contents_pad_len)
 decoder_input_train = pad_sequences(decoder_input_train, maxlen=title_pad_len)
@@ -324,7 +324,7 @@ if __name__ == "__main__":
             plt.plot(history_e3d3.history['loss'], label='train_e3d3')
             plt.plot(history_e3d3.history['val_loss'], label='test_e3d3')
 
-            plt.ylim([0, 3])
+            plt.ylim([2, 9])
             plt.legend()
             plt.title('Loss Graph (Embedding Dim: %d, Hidden Size: %d)' % (embedding_dim, hidden_size))
             plt.savefig('neutral/emb%d_hid%d.png' % (embedding_dim, hidden_size))

@@ -8,7 +8,7 @@ from keras.models import Model
 from keras.layers import Input, LSTM, Dense, Embedding
 
 ''''''''''''''''''''' Read Preprocessed File '''''''''''''''''''''
-csv_read_neutral = 'D:/study/python/UROP/preprocessing/preprocessed_naverNews.csv'
+csv_read_neutral = 'D:/study/python/UROP/analyzing/analyzed_naverNews.csv'
 data = pd.read_csv(csv_read_neutral)
 
 ''''''''''''''''''''' Add SOS, EOS Token in Decoder Input, Output '''''''''''''''''''''

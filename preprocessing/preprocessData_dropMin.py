@@ -26,24 +26,48 @@ for idx in range(len(csv_read_list)):
     data.dropna(axis=0, inplace=True)
     print('After Drop Null,\tLength: ', len(data))
 
+    titleDF = []
+    contentsDF = []
+
+    for sentence in data['title']:
+        sentence = sentence.replace('스브스뉴스', ' ')
+        sentence = sentence.replace('스브스', ' ')
+        sentence = sentence.replace('예능맛집', ' ')
+        sentence = sentence.replace('인턴기', ' ')
+        sentence = sentence.replace('자막뉴스', ' ')
+        sentence = sentence.replace('아침신문', ' ')
+        sentence = sentence.replace('소름돋', ' ')
+        sentence = sentence.replace('초간단', ' ')
+        sentence = sentence.replace('정치성향테스트', ' ')
+        sentence = sentence.replace('최근', ' ')
+        sentence = sentence.replace('지금', ' ')
+        sentence = sentence.replace('거리두', '거리두기')
+        titleDF.append(sentence)
+
+    for sentence in data['contents']:
+        sentence = sentence.replace('스브스뉴스', ' ')
+        sentence = sentence.replace('스브스', ' ')
+        sentence = sentence.replace('예능맛집', ' ')
+        sentence = sentence.replace('인턴기', ' ')
+        sentence = sentence.replace('자막뉴스', ' ')
+        sentence = sentence.replace('아침신문', ' ')
+        sentence = sentence.replace('소름돋', ' ')
+        sentence = sentence.replace('초간단', ' ')
+        sentence = sentence.replace('정치성향테스트', ' ')
+        sentence = sentence.replace('최근', ' ')
+        sentence = sentence.replace('지금', ' ')
+        sentence = sentence.replace('거리두', '거리두기')
+        contentsDF.append(sentence)
+
     dataFrame = []
     dataFrame = pd.DataFrame(dataFrame, columns=['title', 'contents'])
-    dataFrame['title'] = data['title'].replace('스브스뉴스', ' ')
-    dataFrame['title'] = data['title'].replace('자막뉴스', ' ')
-    dataFrame['title'] = data['title'].replace('아침신문', ' ')
-    dataFrame['title'] = data['title'].replace('최근', ' ')
-    dataFrame['title'] = data['title'].replace('거리두', '거리두기')
-
-    dataFrame['contents'] = data['contents'].replace('스브스뉴스', ' ')
-    dataFrame['contents'] = data['contents'].replace('자막뉴스', ' ')
-    dataFrame['contents'] = data['contents'].replace('아침신문', ' ')
-    dataFrame['contents'] = data['contents'].replace('최근', ' ')
-    dataFrame['contents'] = data['contents'].replace('거리두', '거리두기')
+    dataFrame['title'] = titleDF
+    dataFrame['contents'] = contentsDF
     print('After Preprocessing Function,\tLength: ', len(dataFrame))
 
     dataFrame = dataFrame[dataFrame['title'].apply(lambda x: len(x.split()) > 2)]
-    dataFrame = dataFrame[dataFrame['contents'].apply(lambda x: len(x.split()) > 5)]
-    print('After Drop Less than 10, Data Length: ', len(dataFrame))
+    dataFrame = dataFrame[dataFrame['contents'].apply(lambda x: len(x.split()) > 10)]
+    print('After Drop Title < 4, Contents < 10, Data Length: ', len(dataFrame))
     print('\nFinal Len:\t', len(dataFrame))
 
     dataFrame.to_csv(csv_save_list[idx], encoding='utf-8-sig', index=True)
