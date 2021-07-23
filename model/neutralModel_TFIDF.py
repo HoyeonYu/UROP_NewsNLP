@@ -173,7 +173,7 @@ def model_encoder_1_decoder_1():
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
                              batch_size=256, callbacks=[early_stopping_callback], epochs=50)
 
-    model.save('plot_simpleLSTM/e1d1_emb%dhid%d.h5' % (embedding_dim, hidden_size))
+    model.save('plot_simpleLSTM_dropout0/e1d1_emb%dhid%d.h5' % (embedding_dim, hidden_size))
     return history_e1d1
 
 
@@ -215,7 +215,7 @@ def model_encoder_1_decoder_3():
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
                              batch_size=256, callbacks=[early_stopping_callback], epochs=50)
 
-    model.save('plot_simpleLSTM/e1d3_emb%dhid%d.h5' % (embedding_dim, hidden_size))
+    model.save('plot_simpleLSTM_dropout0/e1d3_emb%dhid%d.h5' % (embedding_dim, hidden_size))
     return history_e1d3
 
 
@@ -257,7 +257,7 @@ def model_encoder_3_decoder_1():
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
                              batch_size=256, callbacks=[early_stopping_callback], epochs=50)
 
-    model.save('plot_simpleLSTM/e3d1_emb%dhid%d.h5' % (embedding_dim, hidden_size))
+    model.save('plot_simpleLSTM_dropout0/e3d1_emb%dhid%d.h5' % (embedding_dim, hidden_size))
     return history_e3d1
 
 
@@ -305,7 +305,7 @@ def model_encoder_3_decoder_3():
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
                              batch_size=256, callbacks=[early_stopping_callback], epochs=50)
 
-    model.save('plot_simpleLSTM/e3d3_emb%dhid%d.h5' % (embedding_dim, hidden_size))
+    model.save('plot_simpleLSTM_dropout0/e3d3_emb%dhid%d.h5' % (embedding_dim, hidden_size))
     return history_e3d3
 
 
@@ -332,5 +332,5 @@ if __name__ == "__main__":
             plt.ylim([0, 3])
             plt.legend()
             plt.title('Loss Graph (Embedding Dim: %d, Hidden Size: %d)' % (embedding_dim, hidden_size))
-            plt.savefig('plot_simpleLSTM/emb%d_hid%d.png' % (embedding_dim, hidden_size))
+            plt.savefig('plot_simpleLSTM_dropout0/emb%d_hid%d.png' % (embedding_dim, hidden_size))
 

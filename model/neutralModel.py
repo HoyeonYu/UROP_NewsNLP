@@ -145,7 +145,7 @@ def model_encoder_1_decoder_1():
     encoder_inputs = Input(shape=(contents_pad_len,))
     enc_emb = Embedding(contents_vocab, embedding_dim)(encoder_inputs)
 
-    encoder_lstm1 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    encoder_lstm1 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     encoder_outputs, state_h, state_c = encoder_lstm1(enc_emb)
 
     decoder_inputs = Input(shape=(None,))
@@ -154,7 +154,7 @@ def model_encoder_1_decoder_1():
     dec_emb_layer = Embedding(title_vocab, embedding_dim)
     dec_emb = dec_emb_layer(decoder_inputs)
 
-    decoder_lstm = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_lstm = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     decoder_outputs, _, _ = decoder_lstm(dec_emb, initial_state=[state_h, state_c])
 
     decoder_softmax_layer = Dense(title_vocab, activation='softmax')
@@ -166,7 +166,7 @@ def model_encoder_1_decoder_1():
 
     model.compile(optimizer='rmsprop', loss='sparse_categorical_crossentropy')
 
-    early_stopping_callback = EarlyStopping(monitor='val_loss', patience=10)
+    early_stopping_callback = EarlyStopping(monitor='val_loss', patience=5)
 
     history_e1d1 = model.fit(x=[encoder_input_train, decoder_input_train], y=decoder_target_train,
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
@@ -180,7 +180,7 @@ def model_encoder_1_decoder_3():
     encoder_inputs = Input(shape=(contents_pad_len,))
     enc_emb = Embedding(contents_vocab, embedding_dim)(encoder_inputs)
 
-    encoder_lstm1 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    encoder_lstm1 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     encoder_outputs, state_h, state_c = encoder_lstm1(enc_emb)
 
     decoder_inputs = Input(shape=(None,))
@@ -189,13 +189,13 @@ def model_encoder_1_decoder_3():
     dec_emb_layer = Embedding(title_vocab, embedding_dim)
     dec_emb = dec_emb_layer(decoder_inputs)
 
-    decoder_lstm1 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_lstm1 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     decoder_output1, _, _ = decoder_lstm1(dec_emb, initial_state=[state_h, state_c])
 
-    decoder_lstm2 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_lstm2 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     decoder_output2, _, _ = decoder_lstm2(decoder_output1, initial_state=[state_h, state_c])
 
-    decoder_lstm3 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_lstm3 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     decoder_outputs, _, _ = decoder_lstm3(decoder_output2, initial_state=[state_h, state_c])
 
     decoder_softmax_layer = Dense(title_vocab, activation='softmax')
@@ -207,11 +207,11 @@ def model_encoder_1_decoder_3():
 
     model.compile(optimizer='rmsprop', loss='sparse_categorical_crossentropy')
 
-    early_stopping_callback = EarlyStopping(monitor='val_loss', patience=10)
+    early_stopping_callback = EarlyStopping(monitor='val_loss', patience=5)
 
     history_e1d3 = model.fit(x=[encoder_input_train, decoder_input_train], y=decoder_target_train,
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
-                             batch_size=256, callbacks=[early_stopping_callback], epochs=50)
+                             batch_size=256, callbacks=[early_stopping_callback], epochs=1000)
 
     return history_e1d3
 
@@ -221,13 +221,13 @@ def model_encoder_3_decoder_1():
     encoder_inputs = Input(shape=(contents_pad_len,))
     enc_emb = Embedding(contents_vocab, embedding_dim)(encoder_inputs)
 
-    encoder_lstm1 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    encoder_lstm1 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     encoder_output1, state_h1, state_c1 = encoder_lstm1(enc_emb)
 
-    encoder_lstm2 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    encoder_lstm2 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     encoder_output2, state_h2, state_c2 = encoder_lstm2(encoder_output1)
 
-    encoder_lstm3 = LSTM(hidden_size, return_state=True, return_sequences=True, dropout=0.4)
+    encoder_lstm3 = LSTM(hidden_size, return_state=True, return_sequences=True, dropout=DROPOUT)
     encoder_outputs, state_h, state_c = encoder_lstm3(encoder_output2)
 
     decoder_inputs = Input(shape=(None,))
@@ -236,7 +236,7 @@ def model_encoder_3_decoder_1():
     dec_emb_layer = Embedding(title_vocab, embedding_dim)
     dec_emb = dec_emb_layer(decoder_inputs)
 
-    decoder_lstm = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_lstm = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     decoder_outputs, _, _ = decoder_lstm(dec_emb, initial_state=[state_h, state_c])
 
     decoder_softmax_layer = Dense(title_vocab, activation='softmax')
@@ -248,11 +248,11 @@ def model_encoder_3_decoder_1():
 
     model.compile(optimizer='rmsprop', loss='sparse_categorical_crossentropy')
 
-    early_stopping_callback = EarlyStopping(monitor='val_loss', patience=10)
+    early_stopping_callback = EarlyStopping(monitor='val_loss', patience=5)
 
     history_e3d1 = model.fit(x=[encoder_input_train, decoder_input_train], y=decoder_target_train,
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
-                             batch_size=256, callbacks=[early_stopping_callback], epochs=50)
+                             batch_size=256, callbacks=[early_stopping_callback], epochs=1000)
 
     return history_e3d1
 
@@ -262,13 +262,13 @@ def model_encoder_3_decoder_3():
     encoder_inputs = Input(shape=(contents_pad_len,))
     enc_emb = Embedding(contents_vocab, embedding_dim)(encoder_inputs)
 
-    encoder_lstm1 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    encoder_lstm1 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     encoder_output1, state_h1, state_c1 = encoder_lstm1(enc_emb)
 
-    encoder_lstm2 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    encoder_lstm2 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     encoder_output2, state_h2, state_c2 = encoder_lstm2(encoder_output1)
 
-    encoder_lstm3 = LSTM(hidden_size, return_state=True, return_sequences=True, dropout=0.4)
+    encoder_lstm3 = LSTM(hidden_size, return_state=True, return_sequences=True, dropout=DROPOUT)
     encoder_outputs, state_h, state_c = encoder_lstm3(encoder_output2)
 
     decoder_inputs = Input(shape=(None,))
@@ -277,13 +277,13 @@ def model_encoder_3_decoder_3():
     dec_emb_layer = Embedding(title_vocab, embedding_dim)
     dec_emb = dec_emb_layer(decoder_inputs)
 
-    decoder_lstm1 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_lstm1 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     decoder_output1, _, _ = decoder_lstm1(dec_emb, initial_state=[state_h, state_c])
 
-    decoder_lstm2 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_lstm2 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     decoder_output2, _, _ = decoder_lstm2(decoder_output1, initial_state=[state_h, state_c])
 
-    decoder_lstm3 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_lstm3 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     decoder_outputs, _, _ = decoder_lstm3(decoder_output2, initial_state=[state_h, state_c])
 
     decoder_softmax_layer = Dense(title_vocab, activation='softmax')
@@ -295,11 +295,11 @@ def model_encoder_3_decoder_3():
 
     model.compile(optimizer='rmsprop', loss='sparse_categorical_crossentropy')
 
-    early_stopping_callback = EarlyStopping(monitor='val_loss', patience=10)
+    early_stopping_callback = EarlyStopping(monitor='val_loss', patience=5)
 
     history_e3d3 = model.fit(x=[encoder_input_train, decoder_input_train], y=decoder_target_train,
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
-                             batch_size=256, callbacks=[early_stopping_callback], epochs=50)
+                             batch_size=256, callbacks=[early_stopping_callback], epochs=1000)
 
     return history_e3d3
 
@@ -310,47 +310,42 @@ if __name__ == "__main__":
     loss_e1d3_list = []
     loss_e3d1_list = []
     loss_e3d3_list = []
+
     for embedding_dim in embedding_dim_list:
         for hidden_size in hidden_size_list:
-            info.append('emb: ' + str(embedding_dim) + ', hidden: ' + str(hidden_size))
+            DROPOUT = 0.0
+            info_list.append('emb: ' + str(embedding_dim) + ', hidden: ' + str(hidden_size))
 
             print('\n=========   e1 d1 Start, Emb: %d Hid: %d    ===========' % (embedding_dim, hidden_size))
             history_e1d1 = model_encoder_1_decoder_1()
-            loss_e1d1.append(history_e1d1.history['val_loss'])
+            loss_e1d1_list.append(history_e1d1.history['val_loss'])
             print('==============   e1 d1 End    ================\n')
 
             print('\n=========   e1 d3 Start, Emb: %d Hid: %d    ===========' % (embedding_dim, hidden_size))
             history_e1d3 = model_encoder_1_decoder_3()
-            loss_e1d3.append(history_e1d3.history['val_loss'])
-            print('==============   e1 d1 End    ================\n')
+            loss_e1d3_list.append(history_e1d3.history['val_loss'])
+            print('==============   e1 d3 End    ================\n')
 
             print('\n=========   e3 d1 Start, Emb: %d Hid: %d    ===========' % (embedding_dim, hidden_size))
             history_e3d1 = model_encoder_3_decoder_1()
-            loss_e3d1.append(history_e3d1.history['val_loss'])
+            loss_e3d1_list.append(history_e3d1.history['val_loss'])
             print('==============   e3 d1 End    ================\n')
 
             print('\n=========   e3 d3 Start, Emb: %d Hid: %d    ===========' % (embedding_dim, hidden_size))
             history_e3d3 = model_encoder_3_decoder_3()
-            loss_e3d3.append(history_e3d3.history['val_loss'])
+            loss_e3d3_list.append(history_e3d3.history['val_loss'])
             print('==============   e3 d3 End    ================\n')
 
             plt.figure()
-            plt.plot(history_e1d1.history['loss'], label='train_e1d1')
             plt.plot(history_e1d1.history['val_loss'], label='test_e1d1')
-
-            plt.plot(history_e1d3.history['loss'], label='train_e1d3')
             plt.plot(history_e1d3.history['val_loss'], label='test_e1d3')
-
-            plt.plot(history_e3d1.history['loss'], label='train_e3d1')
             plt.plot(history_e3d1.history['val_loss'], label='test_e3d1')
-
-            plt.plot(history_e3d3.history['loss'], label='train_e3d3')
             plt.plot(history_e3d3.history['val_loss'], label='test_e3d3')
 
-            plt.ylim([0, 4])
+            plt.ylim([1.5, 4])
             plt.legend()
             plt.title('Loss Graph (Embedding Dim: %d, Hidden Size: %d)' % (embedding_dim, hidden_size))
-            plt.savefig('plot_simpleLSTM/emb%d_hid%d.png' % (embedding_dim, hidden_size))
+            plt.savefig('plot_simpleLSTM_dropout20/emb%d_hid%d.png' % (embedding_dim, hidden_size))
 
     loss_dataframe = []
     loss_dataframe = pd.DataFrame(loss_dataframe, columns=['info', 'e1d1', 'e1d3', 'e3d1', 'e3d3'])
