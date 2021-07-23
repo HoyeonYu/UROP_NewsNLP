@@ -62,7 +62,7 @@ print('=========================================')
 
 ''''''''''''''''''''' Re-Tokenize by Checking Contents Word Frequency : Contents '''''''''''''''''''''
 # Tokenize Contents
-contents_vocab = 30000
+contents_vocab = 22000
 contents_tokenizer = Tokenizer(num_words=contents_vocab)
 contents_tokenizer.fit_on_texts(encoder_input_train)
 
@@ -92,7 +92,7 @@ print('Frequency >= %d: %d (%.2f%%)' % (threshold, total_cnt - rare_cnt, ((total
 print('=========================================')
 
 ''''''''''''''''''''' Re-Tokenize by Checking Contents Word Frequency : Title '''''''''''''''''''''
-title_vocab = 5000
+title_vocab = 3300
 title_tokenizer = Tokenizer(num_words=title_vocab)
 title_tokenizer.fit_on_texts(decoder_input_train)
 title_tokenizer.fit_on_texts(decoder_target_train)
@@ -124,8 +124,8 @@ print('Test Output Size:', len(decoder_input_test))
 print('=========================================')
 
 ''''''''''''''''''''' Pad Sequences '''''''''''''''''''''
-contents_pad_len = 500
-title_pad_len = 14
+contents_pad_len = 300
+title_pad_len = 10
 
 encoder_input_train = pad_sequences(encoder_input_train, maxlen=contents_pad_len)
 decoder_input_train = pad_sequences(decoder_input_train, maxlen=title_pad_len)
@@ -136,8 +136,8 @@ decoder_input_test = pad_sequences(decoder_input_test, maxlen=title_pad_len)
 decoder_target_test = pad_sequences(decoder_target_test, maxlen=title_pad_len)
 
 ''''''''''''''''''''' Build Model '''''''''''''''''''''
-embedding_dim = 64
-hidden_size = 64
+embedding_dim = 128
+hidden_size = 128
 
 ''''''''''''''''''''' Encoder : LSTM X 1 '''''''''''''''''''''
 encoder_inputs = Input(shape=(contents_pad_len,))
@@ -162,7 +162,7 @@ model.compile(optimizer='rmsprop', loss='sparse_categorical_crossentropy')
 early_stopping_callback = EarlyStopping(monitor='val_loss', patience=10)
 model.fit(x=[encoder_input_train, decoder_input_train], y=decoder_target_train,
           validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
-          batch_size=256, callbacks=[early_stopping_callback], epochs=20)
+          batch_size=256, callbacks=[early_stopping_callback], epochs=100)
 model.summary()
 
 ''''''''''''''''''''' Test Model '''''''''''''''''''''

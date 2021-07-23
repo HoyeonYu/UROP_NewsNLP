@@ -5,7 +5,7 @@ from keras.callbacks import EarlyStopping
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from keras.models import Model
-from keras.layers import Input, LSTM, Dense, Embedding, GRU
+from keras.layers import Input, GRU, Dense, Embedding, GRU
 
 ''''''''''''''''''''' Read Preprocessed File '''''''''''''''''''''
 csv_read_neutral = 'D:/study/python/UROP/analyzing/analyzed_naverNews.csv'
@@ -124,8 +124,8 @@ print('Test Output Size:', len(decoder_input_test))
 print('=========================================')
 
 ''''''''''''''''''''' Pad Sequences '''''''''''''''''''''
-contents_pad_len = 500
-title_pad_len = 14
+contents_pad_len = 300
+title_pad_len = 10
 
 encoder_input_train = pad_sequences(encoder_input_train, maxlen=contents_pad_len)
 decoder_input_train = pad_sequences(decoder_input_train, maxlen=title_pad_len)
@@ -136,25 +136,24 @@ decoder_input_test = pad_sequences(decoder_input_test, maxlen=title_pad_len)
 decoder_target_test = pad_sequences(decoder_target_test, maxlen=title_pad_len)
 
 ''''''''''''''''''''' Build Model '''''''''''''''''''''
-embedding_dim_list = [32, 64, 128, 256]
-hidden_size_list = [32, 64, 128, 256]
+embedding_dim_list = [32]
+hidden_size_list = [32]
 
 
 def model_encoder_1_decoder_1():
-    ''''''''''''''''''''' Encoder : LSTM X 1 '''''''''''''''''''''
+    ''''''''''''''''''''' Encoder : GRU X 1 '''''''''''''''''''''
     encoder_inputs = Input(shape=(contents_pad_len,))
     enc_emb = Embedding(contents_vocab, embedding_dim)(encoder_inputs)
     encoder_gru = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
-    encoder_outputs, state_h, state_c = encoder_gru(enc_emb)
+    encoder_outputs, state_h = encoder_gru(enc_emb)
 
+    ''''''''''''''''''''' Decoder : GRU X 1 '''''''''''''''''''''
     decoder_inputs = Input(shape=(None,))
-
-    ''''''''''''''''''''' Decoder : LSTM X 1 '''''''''''''''''''''
     dec_emb_layer = Embedding(title_vocab, embedding_dim)
     dec_emb = dec_emb_layer(decoder_inputs)
 
     decoder_gru = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
-    decoder_outputs, _, _ = decoder_gru(dec_emb, initial_state=[state_h, state_c])
+    decoder_outputs, _ = decoder_gru(dec_emb, initial_state=state_h)
 
     decoder_softmax_layer = Dense(title_vocab, activation='softmax')
     decoder_softmax_outputs = decoder_softmax_layer(decoder_outputs)
@@ -171,32 +170,30 @@ def model_encoder_1_decoder_1():
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
                              batch_size=256, callbacks=[early_stopping_callback], epochs=50)
 
-    model.save('neutral/e1d1_emb%dhid%d.h5' % (embedding_dim, hidden_size))
     return history_e1d1
 
 
 def model_encoder_1_decoder_3():
-    ''''''''''''''''''''' Encoder : LSTM X 1 '''''''''''''''''''''
+    ''''''''''''''''''''' Encoder : GRU X 1 '''''''''''''''''''''
     encoder_inputs = Input(shape=(contents_pad_len,))
     enc_emb = Embedding(contents_vocab, embedding_dim)(encoder_inputs)
 
-    encoder_lstm1 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
-    encoder_outputs, state_h, state_c = encoder_lstm1(enc_emb)
+    encoder_gru = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    encoder_outputs, state_h = encoder_gru(enc_emb)
 
+    ''''''''''''''''''''' Decoder : GRU X 3 '''''''''''''''''''''
     decoder_inputs = Input(shape=(None,))
-
-    ''''''''''''''''''''' Decoder : LSTM X 3 '''''''''''''''''''''
     dec_emb_layer = Embedding(title_vocab, embedding_dim)
     dec_emb = dec_emb_layer(decoder_inputs)
 
-    decoder_lstm1 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
-    decoder_output1, _, _ = decoder_lstm1(dec_emb, initial_state=[state_h, state_c])
+    decoder_gru1 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_output1, _ = decoder_gru1(dec_emb, initial_state=state_h)
 
-    decoder_lstm2 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
-    decoder_output2, _, _ = decoder_lstm2(decoder_output1, initial_state=[state_h, state_c])
+    decoder_gru2 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_output2, _ = decoder_gru2(decoder_output1, initial_state=state_h)
 
-    decoder_lstm3 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
-    decoder_outputs, _, _ = decoder_lstm3(decoder_output2, initial_state=[state_h, state_c])
+    decoder_gru3 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_outputs, _ = decoder_gru3(decoder_output2, initial_state=state_h)
 
     decoder_softmax_layer = Dense(title_vocab, activation='softmax')
     decoder_softmax_outputs = decoder_softmax_layer(decoder_outputs)
@@ -213,32 +210,30 @@ def model_encoder_1_decoder_3():
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
                              batch_size=256, callbacks=[early_stopping_callback], epochs=50)
 
-    model.save('neutral/e1d3_emb%dhid%d.h5' % (embedding_dim, hidden_size))
     return history_e1d3
 
 
 def model_encoder_3_decoder_1():
-    ''''''''''''''''''''' Encoder : LSTM X 3 '''''''''''''''''''''
+    ''''''''''''''''''''' Encoder : GRU X 3 '''''''''''''''''''''
     encoder_inputs = Input(shape=(contents_pad_len,))
     enc_emb = Embedding(contents_vocab, embedding_dim)(encoder_inputs)
 
-    encoder_lstm1 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
-    encoder_output1, state_h1, state_c1 = encoder_lstm1(enc_emb)
+    encoder_gru1 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    encoder_output1, state_h = encoder_gru1(enc_emb)
 
-    encoder_lstm2 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
-    encoder_output2, state_h2, state_c2 = encoder_lstm2(encoder_output1)
+    encoder_gru2 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    encoder_output2, state_h = encoder_gru2(encoder_output1)
 
-    encoder_lstm3 = LSTM(hidden_size, return_state=True, return_sequences=True, dropout=0.4)
-    encoder_outputs, state_h, state_c = encoder_lstm3(encoder_output2)
+    encoder_gru3 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    encoder_outputs, state_h = encoder_gru3(encoder_output2)
 
+    ''''''''''''''''''''' Decoder : GRU X 1 '''''''''''''''''''''
     decoder_inputs = Input(shape=(None,))
-
-    ''''''''''''''''''''' Decoder : LSTM X 1 '''''''''''''''''''''
     dec_emb_layer = Embedding(title_vocab, embedding_dim)
     dec_emb = dec_emb_layer(decoder_inputs)
 
-    decoder_lstm = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
-    decoder_outputs, _, _ = decoder_lstm(dec_emb, initial_state=[state_h, state_c])
+    decoder_gru = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_outputs, _ = decoder_gru(dec_emb, initial_state=state_h)
 
     decoder_softmax_layer = Dense(title_vocab, activation='softmax')
     decoder_softmax_outputs = decoder_softmax_layer(decoder_outputs)
@@ -255,38 +250,36 @@ def model_encoder_3_decoder_1():
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
                              batch_size=256, callbacks=[early_stopping_callback], epochs=50)
 
-    model.save('neutral/e3d1_emb%dhid%d.h5' % (embedding_dim, hidden_size))
     return history_e3d1
 
 
 def model_encoder_3_decoder_3():
-    ''''''''''''''''''''' Encoder : LSTM X 3 '''''''''''''''''''''
+    ''''''''''''''''''''' Encoder : GRU X 3 '''''''''''''''''''''
     encoder_inputs = Input(shape=(contents_pad_len,))
     enc_emb = Embedding(contents_vocab, embedding_dim)(encoder_inputs)
 
-    encoder_lstm1 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
-    encoder_output1, state_h1, state_c1 = encoder_lstm1(enc_emb)
+    encoder_gru1 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    encoder_output1, state_h = encoder_gru1(enc_emb)
 
-    encoder_lstm2 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
-    encoder_output2, state_h2, state_c2 = encoder_lstm2(encoder_output1)
+    encoder_gru2 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    encoder_output2, state_h = encoder_gru2(encoder_output1)
 
-    encoder_lstm3 = LSTM(hidden_size, return_state=True, return_sequences=True, dropout=0.4)
-    encoder_outputs, state_h, state_c = encoder_lstm3(encoder_output2)
+    encoder_gru3 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    encoder_outputs, state_h = encoder_gru3(encoder_output2)
 
+    ''''''''''''''''''''' Decoder : GRU X 3 '''''''''''''''''''''
     decoder_inputs = Input(shape=(None,))
-
-    ''''''''''''''''''''' Decoder : LSTM X 3 '''''''''''''''''''''
     dec_emb_layer = Embedding(title_vocab, embedding_dim)
     dec_emb = dec_emb_layer(decoder_inputs)
 
-    decoder_lstm1 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
-    decoder_output1, _, _ = decoder_lstm1(dec_emb, initial_state=[state_h, state_c])
+    decoder_gru1 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_output1, _ = decoder_gru1(dec_emb, initial_state=state_h)
 
-    decoder_lstm2 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
-    decoder_output2, _, _ = decoder_lstm2(decoder_output1, initial_state=[state_h, state_c])
+    decoder_gru2 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_output2, _ = decoder_gru2(decoder_output1, initial_state=state_h)
 
-    decoder_lstm3 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
-    decoder_outputs, _, _ = decoder_lstm3(decoder_output2, initial_state=[state_h, state_c])
+    decoder_gru3 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_outputs, _ = decoder_gru3(decoder_output2, initial_state=state_h)
 
     decoder_softmax_layer = Dense(title_vocab, activation='softmax')
     decoder_softmax_outputs = decoder_softmax_layer(decoder_outputs)
@@ -303,7 +296,6 @@ def model_encoder_3_decoder_3():
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
                              batch_size=256, callbacks=[early_stopping_callback], epochs=50)
 
-    model.save('neutral/e3d3_emb%dhid%d.h5' % (embedding_dim, hidden_size))
     return history_e3d3
 
 
@@ -311,24 +303,12 @@ if __name__ == "__main__":
     for embedding_dim in embedding_dim_list:
         for hidden_size in hidden_size_list:
             history_e1d1 = model_encoder_1_decoder_1()
-            history_e1d3 = model_encoder_1_decoder_3()
-            history_e3d1 = model_encoder_3_decoder_1()
-            history_e3d3 = model_encoder_3_decoder_3()
 
             plt.plot(history_e1d1.history['loss'], label='train_e1d1')
             plt.plot(history_e1d1.history['val_loss'], label='test_e1d1')
 
-            plt.plot(history_e1d3.history['loss'], label='train_e1d3')
-            plt.plot(history_e1d3.history['val_loss'], label='test_e1d3')
-
-            plt.plot(history_e3d1.history['loss'], label='train_e3d1')
-            plt.plot(history_e3d1.history['val_loss'], label='test_e3d1')
-
-            plt.plot(history_e3d3.history['loss'], label='train_e3d3')
-            plt.plot(history_e3d3.history['val_loss'], label='test_e3d3')
-
-            plt.ylim([0, 3])
+            plt.ylim([1.5, 8.5])
             plt.legend()
             plt.title('Loss Graph (Embedding Dim: %d, Hidden Size: %d)' % (embedding_dim, hidden_size))
-            plt.savefig('neutral/emb%d_hid%d.png' % (embedding_dim, hidden_size))
+            plt.savefig('plot_GRU/emb%d_hid%d.png' % (embedding_dim, hidden_size))
 

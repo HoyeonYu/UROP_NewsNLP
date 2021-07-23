@@ -62,7 +62,7 @@ print('=========================================')
 
 ''''''''''''''''''''' Re-Tokenize by Checking Contents Word Frequency : Contents '''''''''''''''''''''
 # Tokenize Contents
-contents_vocab = 30000
+contents_vocab = 22000
 contents_tokenizer = Tokenizer(num_words=contents_vocab)
 contents_tokenizer.fit_on_texts(encoder_input_train)
 
@@ -92,7 +92,7 @@ print('Frequency >= %d: %d (%.2f%%)' % (threshold, total_cnt - rare_cnt, ((total
 print('=========================================')
 
 ''''''''''''''''''''' Re-Tokenize by Checking Contents Word Frequency : Title '''''''''''''''''''''
-title_vocab = 5000
+title_vocab = 3300
 title_tokenizer = Tokenizer(num_words=title_vocab)
 title_tokenizer.fit_on_texts(decoder_input_train)
 title_tokenizer.fit_on_texts(decoder_target_train)
@@ -170,7 +170,7 @@ def model_encoder_1_decoder_1():
 
     history_e1d1 = model.fit(x=[encoder_input_train, decoder_input_train], y=decoder_target_train,
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
-                             batch_size=256, callbacks=[early_stopping_callback], epochs=50)
+                             batch_size=256, callbacks=[early_stopping_callback], epochs=1000)
 
     return history_e1d1
 
@@ -305,13 +305,36 @@ def model_encoder_3_decoder_3():
 
 
 if __name__ == "__main__":
+    info_list = []
+    loss_e1d1_list = []
+    loss_e1d3_list = []
+    loss_e3d1_list = []
+    loss_e3d3_list = []
     for embedding_dim in embedding_dim_list:
         for hidden_size in hidden_size_list:
-            history_e1d1 = model_encoder_1_decoder_1()
-            history_e1d3 = model_encoder_1_decoder_3()
-            history_e3d1 = model_encoder_3_decoder_1()
-            history_e3d3 = model_encoder_3_decoder_3()
+            info.append('emb: ' + str(embedding_dim) + ', hidden: ' + str(hidden_size))
 
+            print('\n=========   e1 d1 Start, Emb: %d Hid: %d    ===========' % (embedding_dim, hidden_size))
+            history_e1d1 = model_encoder_1_decoder_1()
+            loss_e1d1.append(history_e1d1.history['val_loss'])
+            print('==============   e1 d1 End    ================\n')
+
+            print('\n=========   e1 d3 Start, Emb: %d Hid: %d    ===========' % (embedding_dim, hidden_size))
+            history_e1d3 = model_encoder_1_decoder_3()
+            loss_e1d3.append(history_e1d3.history['val_loss'])
+            print('==============   e1 d1 End    ================\n')
+
+            print('\n=========   e3 d1 Start, Emb: %d Hid: %d    ===========' % (embedding_dim, hidden_size))
+            history_e3d1 = model_encoder_3_decoder_1()
+            loss_e3d1.append(history_e3d1.history['val_loss'])
+            print('==============   e3 d1 End    ================\n')
+
+            print('\n=========   e3 d3 Start, Emb: %d Hid: %d    ===========' % (embedding_dim, hidden_size))
+            history_e3d3 = model_encoder_3_decoder_3()
+            loss_e3d3.append(history_e3d3.history['val_loss'])
+            print('==============   e3 d3 End    ================\n')
+
+            plt.figure()
             plt.plot(history_e1d1.history['loss'], label='train_e1d1')
             plt.plot(history_e1d1.history['val_loss'], label='test_e1d1')
 
@@ -324,8 +347,16 @@ if __name__ == "__main__":
             plt.plot(history_e3d3.history['loss'], label='train_e3d3')
             plt.plot(history_e3d3.history['val_loss'], label='test_e3d3')
 
-            plt.ylim([2, 9])
+            plt.ylim([0, 4])
             plt.legend()
             plt.title('Loss Graph (Embedding Dim: %d, Hidden Size: %d)' % (embedding_dim, hidden_size))
-            plt.savefig('neutral/emb%d_hid%d.png' % (embedding_dim, hidden_size))
+            plt.savefig('plot_simpleLSTM/emb%d_hid%d.png' % (embedding_dim, hidden_size))
 
+    loss_dataframe = []
+    loss_dataframe = pd.DataFrame(loss_dataframe, columns=['info', 'e1d1', 'e1d3', 'e3d1', 'e3d3'])
+    loss_dataframe['info'] = info_list
+    loss_dataframe['e1d1'] = loss_e1d1_list
+    loss_dataframe['e1d3'] = loss_e1d3_list
+    loss_dataframe['e3d1'] = loss_e3d1_list
+    loss_dataframe['e3d3'] = loss_e3d3_list
+    loss_dataframe.to_csv('loss_neutral_simpleLSTM', encoding='utf-8-sig', index=True)
