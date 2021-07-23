@@ -310,10 +310,10 @@ if __name__ == "__main__":
     loss_e1d3_list = []
     loss_e3d1_list = []
     loss_e3d3_list = []
+    DROPOUT = 0.4
 
     for embedding_dim in embedding_dim_list:
         for hidden_size in hidden_size_list:
-            DROPOUT = 0.2
             info_list.append('emb: ' + str(embedding_dim) + ', hidden: ' + str(hidden_size))
 
             print('\n=========   e1 d1 Start, Emb: %d Hid: %d    ===========' % (embedding_dim, hidden_size))
@@ -345,7 +345,7 @@ if __name__ == "__main__":
             plt.ylim([1.5, 4])
             plt.legend()
             plt.title('Loss Graph (Embedding Dim: %d, Hidden Size: %d)' % (embedding_dim, hidden_size))
-            plt.savefig('plot_simpleLSTM_dropout%d/emb%d_hid%d.png' % (DROPOUT*100, embedding_dim, hidden_size))
+            plt.savefig('plot_simpleLSTM_dropout%d/emb%d_hid%d.png' % (DROPOUT * 100, embedding_dim, hidden_size))
 
     loss_dataframe = []
     loss_dataframe = pd.DataFrame(loss_dataframe, columns=['info', 'e1d1', 'e1d3', 'e3d1', 'e3d3'])
@@ -354,4 +354,4 @@ if __name__ == "__main__":
     loss_dataframe['e1d3'] = loss_e1d3_list
     loss_dataframe['e3d1'] = loss_e3d1_list
     loss_dataframe['e3d3'] = loss_e3d3_list
-    loss_dataframe.to_csv('loss_neutral_simpleLSTM', encoding='utf-8-sig', index=True)
+    loss_dataframe.to_csv('loss_neutral_simpleLSTM_dropout%d' % (DROPOUT * 100), encoding='utf-8-sig', index=True)
