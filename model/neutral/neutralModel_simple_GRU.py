@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -305,7 +307,10 @@ if __name__ == "__main__":
     loss_e1d3_list = []
     loss_e3d1_list = []
     loss_e3d3_list = []
-    DROPOUT = 0
+    DROPOUT = 0.4
+
+    if not os.path.exists('/plot/plot_simple_GRU_dropout%d' % (DROPOUT * 100)):
+        os.makedirs('/plot/plot_simple_GRU_dropout%d' % (DROPOUT * 100))
 
     for embedding_dim in embedding_dim_list:
         for hidden_size in hidden_size_list:
@@ -340,7 +345,7 @@ if __name__ == "__main__":
             plt.ylim([1.5, 4])
             plt.legend()
             plt.title('Loss Graph (Embedding Dim: %d, Hidden Size: %d)' % (embedding_dim, hidden_size))
-            plt.savefig('plot_simpleGRU_dropout%d/emb%d_hid%d.png' % (DROPOUT * 100, embedding_dim, hidden_size))
+            plt.savefig('plot/plot_simple_GRU_dropout%d/emb%d_hid%d.png' % (DROPOUT * 100, embedding_dim, hidden_size))
 
     loss_dataframe = []
     loss_dataframe = pd.DataFrame(loss_dataframe, columns=['info', 'e1d1', 'e1d3', 'e3d1', 'e3d3'])
@@ -349,4 +354,4 @@ if __name__ == "__main__":
     loss_dataframe['e1d3'] = loss_e1d3_list
     loss_dataframe['e3d1'] = loss_e3d1_list
     loss_dataframe['e3d3'] = loss_e3d3_list
-    loss_dataframe.to_csv('loss_neutral_simpleGRU_dropout%d' % (DROPOUT * 100), encoding='utf-8-sig', index=True)
+    loss_dataframe.to_csv('loss_simple_GRU_dropout%d.csv' % (DROPOUT * 100), encoding='utf-8-sig', index=True)
