@@ -114,85 +114,86 @@ encoder_input_test = pad_sequences(encoder_input_test, maxlen=contents_pad_len)
 decoder_input_test = pad_sequences(decoder_input_test, maxlen=title_pad_len)
 decoder_target_test = pad_sequences(decoder_target_test, maxlen=title_pad_len)
 
-''''''''''''''''''''' Build Model '''''''''''''''''''''
-embedding_dim = 64
-hidden_size = 64
-
-''''''''''''''''''''' Encoder : LSTM X 1 '''''''''''''''''''''
-encoder_inputs = Input(shape=(contents_pad_len,))
-enc_emb = Embedding(contents_vocab, embedding_dim)(encoder_inputs)
-encoder_lstm = LSTM(hidden_size, return_state=True, dropout=0.4)
-encoder_outputs, state_h, state_c = encoder_lstm(enc_emb)
-encoder_states = [state_h, state_c]
-
-''''''''''''''''''''' Decoder : LSTM X 1 '''''''''''''''''''''
-decoder_inputs = Input(shape=(None,))
-dec_emb_layer = Embedding(title_vocab, embedding_dim)
-dec_emb = dec_emb_layer(decoder_inputs)
-decoder_lstm = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
-decoder_outputs, _, _ = decoder_lstm(dec_emb, initial_state=encoder_states)
-
-decoder_dense = Dense(title_vocab, activation='softmax')
-decoder_outputs = decoder_dense(decoder_outputs)
-
-''''''''''''''''''''' Encoder + Decoder Model '''''''''''''''''''''
-model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
-model.compile(optimizer='rmsprop', loss='sparse_categorical_crossentropy')
-early_stopping_callback = EarlyStopping(monitor='val_loss', patience=10)
-model.fit(x=[encoder_input_train, decoder_input_train], y=decoder_target_train,
-          validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
-          batch_size=256, callbacks=[early_stopping_callback], epochs=10)
-model.summary()
-
-''''''''''''''''''''' Test Model '''''''''''''''''''''
+# ''''''''''''''''''''' Build Model '''''''''''''''''''''
+# embedding_dim = 64
+# hidden_size = 64
+#
+# ''''''''''''''''''''' Encoder : LSTM X 1 '''''''''''''''''''''
+# encoder_inputs = Input(shape=(contents_pad_len,))
+# enc_emb = Embedding(contents_vocab, embedding_dim)(encoder_inputs)
+# encoder_lstm = LSTM(hidden_size, return_state=True, dropout=0.4)
+# encoder_outputs, state_h, state_c = encoder_lstm(enc_emb)
+# encoder_states = [state_h, state_c]
+#
+# ''''''''''''''''''''' Decoder : LSTM X 1 '''''''''''''''''''''
+# decoder_inputs = Input(shape=(None,))
+# dec_emb_layer = Embedding(title_vocab, embedding_dim)
+# dec_emb = dec_emb_layer(decoder_inputs)
+# decoder_lstm = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+# decoder_outputs, _, _ = decoder_lstm(dec_emb, initial_state=encoder_states)
+#
+# decoder_dense = Dense(title_vocab, activation='softmax')
+# decoder_outputs = decoder_dense(decoder_outputs)
+#
+# ''''''''''''''''''''' Encoder + Decoder Model '''''''''''''''''''''
+# model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
+# model.compile(optimizer='rmsprop', loss='sparse_categorical_crossentropy')
+# early_stopping_callback = EarlyStopping(monitor='val_loss', patience=10)
+# model.fit(x=[encoder_input_train, decoder_input_train], y=decoder_target_train,
+#           validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
+#           batch_size=256, callbacks=[early_stopping_callback], epochs=3)
+# model.summary()
+#
+# ''''''''''''''''''''' Test Model '''''''''''''''''''''
 contents_word_to_index = contents_tokenizer.vocabulary_
 contents_index_to_word = dict(map(reversed, contents_word_to_index.items()))
 title_word_to_index = title_tokenizer.vocabulary_
 title_index_to_word = dict(map(reversed, title_word_to_index.items()))
-print(title_index_to_word)
+# print(title_word_to_index)
+# print(title_index_to_word)
+#
+# encoder_model = Model(inputs=encoder_inputs, outputs=[encoder_outputs, state_h, state_c])
+#
+# decoder_state_input_h = Input(shape=(hidden_size,))
+# decoder_state_input_c = Input(shape=(hidden_size,))
+# decoder_states_inputs = [decoder_state_input_h, decoder_state_input_c]
+#
+# dec_emb2 = dec_emb_layer(decoder_inputs)
+# decoder_outputs2, state_h2, state_c2 = decoder_lstm(dec_emb2, initial_state=decoder_states_inputs)
+# decoder_states = [state_h2, state_c2]
+#
+# decoder_outputs2 = decoder_dense(decoder_outputs2)
+#
+# decoder_model = Model([decoder_inputs] + decoder_states_inputs,
+#                       [decoder_outputs2] + decoder_states)
 
-encoder_model = Model(inputs=encoder_inputs, outputs=[encoder_outputs, state_h, state_c])
 
-decoder_state_input_h = Input(shape=(hidden_size,))
-decoder_state_input_c = Input(shape=(hidden_size,))
-decoder_states_inputs = [decoder_state_input_h, decoder_state_input_c]
-
-dec_emb2 = dec_emb_layer(decoder_inputs)
-decoder_outputs2, state_h2, state_c2 = decoder_lstm(dec_emb2, initial_state=decoder_states_inputs)
-decoder_states = [state_h2, state_c2]
-
-decoder_outputs2 = decoder_dense(decoder_outputs2)
-
-decoder_model = Model([decoder_inputs] + decoder_states_inputs,
-                      [decoder_outputs2] + decoder_states)
-
-
-def decode_sequence(input_seq):
-    e_out, e_h, e_c = encoder_model.predict(input_seq)
-    states_value = [e_h, e_c]
-
-    target_seq = np.zeros((1, 1))
-    target_seq[0, 0] = title_word_to_index['sostoken']
-
-    decoded_sentence = ''
-
-    while True:
-        output_tokens, h, c = decoder_model.predict([target_seq] + states_value)
-        sampled_token_index = np.argmax(output_tokens[0, -1, :])
-        sampled_token = title_index_to_word[sampled_token_index + 1]
-
-        if sampled_token == 'eostoken' or len(decoded_sentence.split(' ')) > title_pad_len - 1:
-            break
-
-        else:
-            decoded_sentence += sampled_token + ' '
-
-        target_seq = np.zeros((1, 1))
-        target_seq[0, 0] = sampled_token_index
-
-        states_value = [h, c]
-
-    return decoded_sentence
+# def decode_sequence(input_seq):
+#     e_out, e_h, e_c = encoder_model.predict(input_seq)
+#     states_value = [e_h, e_c]
+#
+#     target_seq = np.zeros((1, 1))
+#     target_seq[0, 0] = title_word_to_index['sostoken']
+#
+#     decoded_sentence = ''
+#
+#     while True:
+#         output_tokens, h, c = decoder_model.predict([target_seq] + states_value)
+#         sampled_token_index = np.argmax(output_tokens[0, -1, :])
+#         sampled_token = title_index_to_word[sampled_token_index + 1]
+#
+#         if sampled_token == 'eostoken' or len(decoded_sentence.split(' ')) > title_pad_len - 1:
+#             break
+#
+#         else:
+#             decoded_sentence += sampled_token + ' '
+#
+#         target_seq = np.zeros((1, 1))
+#         target_seq[0, 0] = sampled_token_index
+#
+#         states_value = [h, c]
+#
+#     return decoded_sentence
 
 
 def seq2text(input_seq):
@@ -214,5 +215,5 @@ def seq2summary(input_seq):
 for i in range(500, 600):
     print("원문 : ", seq2text(encoder_input_test[i]))
     print("실제 요약문 :", seq2summary(decoder_input_test[i]))
-    print("예측 요약문 :", decode_sequence(encoder_input_test[i].reshape(1, contents_pad_len)))
+    # print("예측 요약문 :", decode_sequence(encoder_input_test[i].reshape(1, contents_pad_len)))
     print("\n")

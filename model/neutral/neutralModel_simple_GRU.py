@@ -307,7 +307,7 @@ if __name__ == "__main__":
     loss_e1d3_list = []
     loss_e3d1_list = []
     loss_e3d3_list = []
-    DROPOUT = 0.4
+    DROPOUT = 0.5
 
     plot_dir = 'D:/study/python/UROP/model/neutral/plot/plot_simple_GRU_dropout%d' % (DROPOUT * 100)
     if not os.path.exists(plot_dir):
