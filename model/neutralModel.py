@@ -310,7 +310,7 @@ if __name__ == "__main__":
     loss_e1d3_list = []
     loss_e3d1_list = []
     loss_e3d3_list = []
-    DROPOUT = 0.4
+    DROPOUT = 0.5
 
     for embedding_dim in embedding_dim_list:
         for hidden_size in hidden_size_list:
