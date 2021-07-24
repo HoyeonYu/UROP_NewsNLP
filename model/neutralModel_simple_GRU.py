@@ -136,15 +136,15 @@ decoder_input_test = pad_sequences(decoder_input_test, maxlen=title_pad_len)
 decoder_target_test = pad_sequences(decoder_target_test, maxlen=title_pad_len)
 
 ''''''''''''''''''''' Build Model '''''''''''''''''''''
-embedding_dim_list = [32]
-hidden_size_list = [32]
+embedding_dim_list = [64, 128, 256]
+hidden_size_list = [32, 64, 128]
 
 
 def model_encoder_1_decoder_1():
     ''''''''''''''''''''' Encoder : GRU X 1 '''''''''''''''''''''
     encoder_inputs = Input(shape=(contents_pad_len,))
     enc_emb = Embedding(contents_vocab, embedding_dim)(encoder_inputs)
-    encoder_gru = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    encoder_gru = GRU(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     encoder_outputs, state_h = encoder_gru(enc_emb)
 
     ''''''''''''''''''''' Decoder : GRU X 1 '''''''''''''''''''''
@@ -152,11 +152,11 @@ def model_encoder_1_decoder_1():
     dec_emb_layer = Embedding(title_vocab, embedding_dim)
     dec_emb = dec_emb_layer(decoder_inputs)
 
-    decoder_gru = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_gru = GRU(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     decoder_outputs, _ = decoder_gru(dec_emb, initial_state=state_h)
 
-    decoder_softmax_layer = Dense(title_vocab, activation='softmax')
-    decoder_softmax_outputs = decoder_softmax_layer(decoder_outputs)
+    decoder_dense = Dense(title_vocab, activation='softmax')
+    decoder_softmax_outputs = decoder_dense(decoder_outputs)
 
     ''''''''''''''''''''' Encoder + Decoder Model '''''''''''''''''''''
     model = Model([encoder_inputs, decoder_inputs], decoder_softmax_outputs)
@@ -168,7 +168,7 @@ def model_encoder_1_decoder_1():
 
     history_e1d1 = model.fit(x=[encoder_input_train, decoder_input_train], y=decoder_target_train,
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
-                             batch_size=256, callbacks=[early_stopping_callback], epochs=50)
+                             batch_size=256, callbacks=[early_stopping_callback], epochs=1000)
 
     return history_e1d1
 
@@ -178,7 +178,7 @@ def model_encoder_1_decoder_3():
     encoder_inputs = Input(shape=(contents_pad_len,))
     enc_emb = Embedding(contents_vocab, embedding_dim)(encoder_inputs)
 
-    encoder_gru = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    encoder_gru = GRU(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     encoder_outputs, state_h = encoder_gru(enc_emb)
 
     ''''''''''''''''''''' Decoder : GRU X 3 '''''''''''''''''''''
@@ -186,17 +186,17 @@ def model_encoder_1_decoder_3():
     dec_emb_layer = Embedding(title_vocab, embedding_dim)
     dec_emb = dec_emb_layer(decoder_inputs)
 
-    decoder_gru1 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_gru1 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     decoder_output1, _ = decoder_gru1(dec_emb, initial_state=state_h)
 
-    decoder_gru2 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_gru2 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     decoder_output2, _ = decoder_gru2(decoder_output1, initial_state=state_h)
 
-    decoder_gru3 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_gru3 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     decoder_outputs, _ = decoder_gru3(decoder_output2, initial_state=state_h)
 
-    decoder_softmax_layer = Dense(title_vocab, activation='softmax')
-    decoder_softmax_outputs = decoder_softmax_layer(decoder_outputs)
+    decoder_dense = Dense(title_vocab, activation='softmax')
+    decoder_softmax_outputs = decoder_dense(decoder_outputs)
 
     ''''''''''''''''''''' Encoder + Decoder Model '''''''''''''''''''''
     model = Model([encoder_inputs, decoder_inputs], decoder_softmax_outputs)
@@ -208,7 +208,7 @@ def model_encoder_1_decoder_3():
 
     history_e1d3 = model.fit(x=[encoder_input_train, decoder_input_train], y=decoder_target_train,
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
-                             batch_size=256, callbacks=[early_stopping_callback], epochs=50)
+                             batch_size=256, callbacks=[early_stopping_callback], epochs=1000)
 
     return history_e1d3
 
@@ -218,13 +218,13 @@ def model_encoder_3_decoder_1():
     encoder_inputs = Input(shape=(contents_pad_len,))
     enc_emb = Embedding(contents_vocab, embedding_dim)(encoder_inputs)
 
-    encoder_gru1 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    encoder_gru1 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     encoder_output1, state_h = encoder_gru1(enc_emb)
 
-    encoder_gru2 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    encoder_gru2 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     encoder_output2, state_h = encoder_gru2(encoder_output1)
 
-    encoder_gru3 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    encoder_gru3 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     encoder_outputs, state_h = encoder_gru3(encoder_output2)
 
     ''''''''''''''''''''' Decoder : GRU X 1 '''''''''''''''''''''
@@ -232,11 +232,11 @@ def model_encoder_3_decoder_1():
     dec_emb_layer = Embedding(title_vocab, embedding_dim)
     dec_emb = dec_emb_layer(decoder_inputs)
 
-    decoder_gru = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_gru = GRU(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     decoder_outputs, _ = decoder_gru(dec_emb, initial_state=state_h)
 
-    decoder_softmax_layer = Dense(title_vocab, activation='softmax')
-    decoder_softmax_outputs = decoder_softmax_layer(decoder_outputs)
+    decoder_dense = Dense(title_vocab, activation='softmax')
+    decoder_softmax_outputs = decoder_dense(decoder_outputs)
 
     ''''''''''''''''''''' Encoder + Decoder Model '''''''''''''''''''''
     model = Model([encoder_inputs, decoder_inputs], decoder_softmax_outputs)
@@ -248,7 +248,7 @@ def model_encoder_3_decoder_1():
 
     history_e3d1 = model.fit(x=[encoder_input_train, decoder_input_train], y=decoder_target_train,
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
-                             batch_size=256, callbacks=[early_stopping_callback], epochs=50)
+                             batch_size=256, callbacks=[early_stopping_callback], epochs=1000)
 
     return history_e3d1
 
@@ -258,13 +258,13 @@ def model_encoder_3_decoder_3():
     encoder_inputs = Input(shape=(contents_pad_len,))
     enc_emb = Embedding(contents_vocab, embedding_dim)(encoder_inputs)
 
-    encoder_gru1 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    encoder_gru1 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     encoder_output1, state_h = encoder_gru1(enc_emb)
 
-    encoder_gru2 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    encoder_gru2 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     encoder_output2, state_h = encoder_gru2(encoder_output1)
 
-    encoder_gru3 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    encoder_gru3 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     encoder_outputs, state_h = encoder_gru3(encoder_output2)
 
     ''''''''''''''''''''' Decoder : GRU X 3 '''''''''''''''''''''
@@ -272,17 +272,17 @@ def model_encoder_3_decoder_3():
     dec_emb_layer = Embedding(title_vocab, embedding_dim)
     dec_emb = dec_emb_layer(decoder_inputs)
 
-    decoder_gru1 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_gru1 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     decoder_output1, _ = decoder_gru1(dec_emb, initial_state=state_h)
 
-    decoder_gru2 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_gru2 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     decoder_output2, _ = decoder_gru2(decoder_output1, initial_state=state_h)
 
-    decoder_gru3 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
+    decoder_gru3 = GRU(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
     decoder_outputs, _ = decoder_gru3(decoder_output2, initial_state=state_h)
 
-    decoder_softmax_layer = Dense(title_vocab, activation='softmax')
-    decoder_softmax_outputs = decoder_softmax_layer(decoder_outputs)
+    decoder_dense = Dense(title_vocab, activation='softmax')
+    decoder_softmax_outputs = decoder_dense(decoder_outputs)
 
     ''''''''''''''''''''' Encoder + Decoder Model '''''''''''''''''''''
     model = Model([encoder_inputs, decoder_inputs], decoder_softmax_outputs)
@@ -294,21 +294,59 @@ def model_encoder_3_decoder_3():
 
     history_e3d3 = model.fit(x=[encoder_input_train, decoder_input_train], y=decoder_target_train,
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
-                             batch_size=256, callbacks=[early_stopping_callback], epochs=50)
+                             batch_size=256, callbacks=[early_stopping_callback], epochs=1000)
 
     return history_e3d3
 
 
 if __name__ == "__main__":
+    info_list = []
+    loss_e1d1_list = []
+    loss_e1d3_list = []
+    loss_e3d1_list = []
+    loss_e3d3_list = []
+    DROPOUT = 0
+
     for embedding_dim in embedding_dim_list:
         for hidden_size in hidden_size_list:
+            info_list.append('emb: ' + str(embedding_dim) + ', hidden: ' + str(hidden_size))
+
+            print('\n=========   e1 d1 Start, Emb: %d Hid: %d    ===========' % (embedding_dim, hidden_size))
             history_e1d1 = model_encoder_1_decoder_1()
+            loss_e1d1_list.append(history_e1d1.history['val_loss'])
+            print('==============   e1 d1 End    ================\n')
 
-            plt.plot(history_e1d1.history['loss'], label='train_e1d1')
+            print('\n=========   e1 d3 Start, Emb: %d Hid: %d    ===========' % (embedding_dim, hidden_size))
+            history_e1d3 = model_encoder_1_decoder_3()
+            loss_e1d3_list.append(history_e1d3.history['val_loss'])
+            print('==============   e1 d3 End    ================\n')
+
+            print('\n=========   e3 d1 Start, Emb: %d Hid: %d    ===========' % (embedding_dim, hidden_size))
+            history_e3d1 = model_encoder_3_decoder_1()
+            loss_e3d1_list.append(history_e3d1.history['val_loss'])
+            print('==============   e3 d1 End    ================\n')
+
+            print('\n=========   e3 d3 Start, Emb: %d Hid: %d    ===========' % (embedding_dim, hidden_size))
+            history_e3d3 = model_encoder_3_decoder_3()
+            loss_e3d3_list.append(history_e3d3.history['val_loss'])
+            print('==============   e3 d3 End    ================\n')
+
+            plt.figure()
             plt.plot(history_e1d1.history['val_loss'], label='test_e1d1')
+            plt.plot(history_e1d3.history['val_loss'], label='test_e1d3')
+            plt.plot(history_e3d1.history['val_loss'], label='test_e3d1')
+            plt.plot(history_e3d3.history['val_loss'], label='test_e3d3')
 
-            plt.ylim([1.5, 8.5])
+            plt.ylim([1.5, 4])
             plt.legend()
             plt.title('Loss Graph (Embedding Dim: %d, Hidden Size: %d)' % (embedding_dim, hidden_size))
-            plt.savefig('plot_GRU/emb%d_hid%d.png' % (embedding_dim, hidden_size))
+            plt.savefig('plot_simpleGRU_dropout%d/emb%d_hid%d.png' % (DROPOUT * 100, embedding_dim, hidden_size))
 
+    loss_dataframe = []
+    loss_dataframe = pd.DataFrame(loss_dataframe, columns=['info', 'e1d1', 'e1d3', 'e3d1', 'e3d3'])
+    loss_dataframe['info'] = info_list
+    loss_dataframe['e1d1'] = loss_e1d1_list
+    loss_dataframe['e1d3'] = loss_e1d3_list
+    loss_dataframe['e3d1'] = loss_e3d1_list
+    loss_dataframe['e3d3'] = loss_e3d3_list
+    loss_dataframe.to_csv('loss_neutral_simpleGRU_dropout%d' % (DROPOUT * 100), encoding='utf-8-sig', index=True)

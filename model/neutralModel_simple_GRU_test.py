@@ -153,8 +153,8 @@ dec_emb = dec_emb_layer(decoder_inputs)
 decoder_gru = GRU(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
 decoder_outputs, _ = decoder_gru(dec_emb, initial_state=state_h)
 
-decoder_softmax_layer = Dense(title_vocab, activation='softmax')
-decoder_softmax_outputs = decoder_softmax_layer(decoder_outputs)
+decoder_dense = Dense(title_vocab, activation='softmax')
+decoder_softmax_outputs = decoder_dense(decoder_outputs)
 
 ''''''''''''''''''''' Encoder + Decoder Model '''''''''''''''''''''
 model = Model([encoder_inputs, decoder_inputs], decoder_softmax_outputs)
@@ -166,9 +166,7 @@ early_stopping_callback = EarlyStopping(monitor='val_loss', patience=10)
 
 history_e1d1 = model.fit(x=[encoder_input_train, decoder_input_train], y=decoder_target_train,
                          validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
-                         batch_size=256, callbacks=[early_stopping_callback], epochs=50)
-
-
+                         batch_size=256, callbacks=[early_stopping_callback], epochs=1000)
 
 ''''''''''''''''''''' Test Model '''''''''''''''''''''
 contents_index_to_word = contents_tokenizer.index_word
@@ -179,8 +177,7 @@ print(title_index_to_word)
 encoder_model = Model(inputs=encoder_inputs, outputs=[encoder_outputs, state_h])
 
 decoder_state_input_h = Input(shape=(hidden_size,))
-decoder_state_input_c = Input(shape=(hidden_size,))
-decoder_states_inputs = [decoder_state_input_h, decoder_state_input_c]
+decoder_states_inputs = [decoder_state_input_h]
 
 dec_emb2 = dec_emb_layer(decoder_inputs)
 decoder_outputs2, state_h2 = decoder_gru(dec_emb2, initial_state=decoder_states_inputs)

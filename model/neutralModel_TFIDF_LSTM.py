@@ -173,7 +173,7 @@ def model_encoder_1_decoder_1():
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
                              batch_size=256, callbacks=[early_stopping_callback], epochs=50)
 
-    model.save('plot_simpleLSTM_dropout0/e1d1_emb%dhid%d.h5' % (embedding_dim, hidden_size))
+    model.save('plot_TFIDF_LSTM_dropout0/e1d1_emb%dhid%d.h5' % (embedding_dim, hidden_size))
     return history_e1d1
 
 
@@ -215,7 +215,6 @@ def model_encoder_1_decoder_3():
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
                              batch_size=256, callbacks=[early_stopping_callback], epochs=50)
 
-    model.save('plot_simpleLSTM_dropout0/e1d3_emb%dhid%d.h5' % (embedding_dim, hidden_size))
     return history_e1d3
 
 
@@ -257,7 +256,6 @@ def model_encoder_3_decoder_1():
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
                              batch_size=256, callbacks=[early_stopping_callback], epochs=50)
 
-    model.save('plot_simpleLSTM_dropout0/e3d1_emb%dhid%d.h5' % (embedding_dim, hidden_size))
     return history_e3d1
 
 
@@ -305,32 +303,58 @@ def model_encoder_3_decoder_3():
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
                              batch_size=256, callbacks=[early_stopping_callback], epochs=50)
 
-    model.save('plot_simpleLSTM_dropout0/e3d3_emb%dhid%d.h5' % (embedding_dim, hidden_size))
     return history_e3d3
 
 
 if __name__ == "__main__":
+    info_list = []
+    loss_e1d1_list = []
+    loss_e1d3_list = []
+    loss_e3d1_list = []
+    loss_e3d3_list = []
+    DROPOUT = 0.5
+
     for embedding_dim in embedding_dim_list:
         for hidden_size in hidden_size_list:
+            info_list.append('emb: ' + str(embedding_dim) + ', hidden: ' + str(hidden_size))
+
+            print('\n=========   e1 d1 Start, Emb: %d Hid: %d    ===========' % (embedding_dim, hidden_size))
             history_e1d1 = model_encoder_1_decoder_1()
+            loss_e1d1_list.append(history_e1d1.history['val_loss'])
+            print('==============   e1 d1 End    ================\n')
+
+            print('\n=========   e1 d3 Start, Emb: %d Hid: %d    ===========' % (embedding_dim, hidden_size))
             history_e1d3 = model_encoder_1_decoder_3()
+            loss_e1d3_list.append(history_e1d3.history['val_loss'])
+            print('==============   e1 d3 End    ================\n')
+
+            print('\n=========   e3 d1 Start, Emb: %d Hid: %d    ===========' % (embedding_dim, hidden_size))
             history_e3d1 = model_encoder_3_decoder_1()
+            loss_e3d1_list.append(history_e3d1.history['val_loss'])
+            print('==============   e3 d1 End    ================\n')
+
+            print('\n=========   e3 d3 Start, Emb: %d Hid: %d    ===========' % (embedding_dim, hidden_size))
             history_e3d3 = model_encoder_3_decoder_3()
+            loss_e3d3_list.append(history_e3d3.history['val_loss'])
+            print('==============   e3 d3 End    ================\n')
 
-            plt.plot(history_e1d1.history['loss'], label='train_e1d1')
+            plt.figure()
             plt.plot(history_e1d1.history['val_loss'], label='test_e1d1')
-
-            plt.plot(history_e1d3.history['loss'], label='train_e1d3')
             plt.plot(history_e1d3.history['val_loss'], label='test_e1d3')
-
-            plt.plot(history_e3d1.history['loss'], label='train_e3d1')
             plt.plot(history_e3d1.history['val_loss'], label='test_e3d1')
-
-            plt.plot(history_e3d3.history['loss'], label='train_e3d3')
             plt.plot(history_e3d3.history['val_loss'], label='test_e3d3')
 
-            plt.ylim([0, 3])
+            plt.ylim([1.5, 4])
             plt.legend()
             plt.title('Loss Graph (Embedding Dim: %d, Hidden Size: %d)' % (embedding_dim, hidden_size))
-            plt.savefig('plot_simpleLSTM_dropout0/emb%d_hid%d.png' % (embedding_dim, hidden_size))
+            plt.savefig('plot_TFIDF_LSTM_dropout%d/emb%d_hid%d.png' % (DROPOUT * 100, embedding_dim, hidden_size))
+
+    loss_dataframe = []
+    loss_dataframe = pd.DataFrame(loss_dataframe, columns=['info', 'e1d1', 'e1d3', 'e3d1', 'e3d3'])
+    loss_dataframe['info'] = info_list
+    loss_dataframe['e1d1'] = loss_e1d1_list
+    loss_dataframe['e1d3'] = loss_e1d3_list
+    loss_dataframe['e3d1'] = loss_e3d1_list
+    loss_dataframe['e3d3'] = loss_e3d3_list
+    loss_dataframe.to_csv('loss_neutral_TFIDF_LSTM_dropout%d' % (DROPOUT * 100), encoding='utf-8-sig', index=True)
 
