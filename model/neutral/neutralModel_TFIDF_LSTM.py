@@ -1,9 +1,9 @@
+import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from keras.callbacks import EarlyStopping
 from sklearn.feature_extraction.text import TfidfVectorizer
-from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from keras.models import Model
 from keras.layers import Input, LSTM, Dense, Embedding
@@ -43,66 +43,44 @@ decoder_target_test = decoder_target[-test_val:]
 ''''''''''''''''''''' Tokenize : Contents '''''''''''''''''''''
 contents_tokenizer = TfidfVectorizer()
 contents_tokenizer.fit(encoder_input_train)
-
-threshold = 5
-total_cnt = len(contents_tokenizer.word_index)
-rare_cnt = 0
-total_freq = 0
-
-for key, value in contents_tokenizer.word_counts.items():
-    total_freq += value
-    if value < threshold:
-        rare_cnt += 1
+total_cnt = len(contents_tokenizer.vocabulary_)
 
 print('=========================================')
-print('Analyze Contents Token\n')
+print('Analyze Contents Token')
 print('Total Word Num:', total_cnt)
-print('Frequency < %d: %d (%.2f%%)' % (threshold, rare_cnt, (rare_cnt / total_cnt) * 100))
-print('Frequency >= %d: %d (%.2f%%)' % (threshold, total_cnt - rare_cnt, ((total_cnt - rare_cnt) / total_cnt) * 100))
 print('=========================================')
 
 ''''''''''''''''''''' Re-Tokenize by Checking Contents Word Frequency : Contents '''''''''''''''''''''
 # Tokenize Contents
-contents_vocab = 30000
-contents_tokenizer = TfidfVectorizer(num_words=contents_vocab)
+contents_vocab = 22000
+contents_tokenizer = TfidfVectorizer(max_features=contents_vocab)
 contents_tokenizer.fit(encoder_input_train)
 
 ''''''''''''''''''''' Text to Sequence : Contents '''''''''''''''''''''
-encoder_input_train = contents_tokenizer.texts_to_sequences(encoder_input_train)
-encoder_input_test = contents_tokenizer.texts_to_sequences(encoder_input_test)
+encoder_input_train = contents_tokenizer.transform(encoder_input_train).toarray()
+encoder_input_test = contents_tokenizer.transform(encoder_input_test).toarray()
 
 ''''''''''''''''''''' Tokenize : Title '''''''''''''''''''''
 title_tokenizer = TfidfVectorizer()
 title_tokenizer.fit(decoder_input_train)
 
-threshold = 3
-total_cnt = len(title_tokenizer.word_index)
-rare_cnt = 0
-total_freq = 0
-
-for key, value in title_tokenizer.word_counts.items():
-    total_freq += value
-    if value < threshold:
-        rare_cnt += 1
+total_cnt = len(title_tokenizer.vocabulary_)
 
 print('=========================================')
-print('Analyze Title Token\n')
+print('Analyze Title Token')
 print('Total Word Num:', total_cnt)
-print('Frequency < %d: %d (%.2f%%)' % (threshold, rare_cnt, (rare_cnt / total_cnt) * 100))
-print('Frequency >= %d: %d (%.2f%%)' % (threshold, total_cnt - rare_cnt, ((total_cnt - rare_cnt) / total_cnt) * 100))
 print('=========================================')
 
 ''''''''''''''''''''' Re-Tokenize by Checking Contents Word Frequency : Title '''''''''''''''''''''
-title_vocab = 5000
-title_tokenizer = TfidfVectorizer(num_words=title_vocab)
-title_tokenizer.fit(decoder_input_train)
-title_tokenizer.fit(decoder_target_train)
+title_vocab = 10300
+title_tokenizer = TfidfVectorizer(max_features=title_vocab)
+title_tokenizer.fit(decoder_input_train + decoder_target_train)
 
 ''''''''''''''''''''' Text to Sequence : Title '''''''''''''''''''''
-decoder_input_train = title_tokenizer.texts_to_sequences(decoder_input_train)
-decoder_target_train = title_tokenizer.texts_to_sequences(decoder_target_train)
-decoder_input_test = title_tokenizer.texts_to_sequences(decoder_input_test)
-decoder_target_test = title_tokenizer.texts_to_sequences(decoder_target_test)
+decoder_input_train = title_tokenizer.transform(decoder_input_train).toarray()
+decoder_target_train = title_tokenizer.transform(decoder_target_train).toarray()
+decoder_input_test = title_tokenizer.transform(decoder_input_test).toarray()
+decoder_target_test = title_tokenizer.transform(decoder_target_test).toarray()
 
 ''''''''''''''''''''' Drop If Token Size < 3 '''''''''''''''''''''
 drop_train = [index for index, sentence in enumerate(decoder_input_train) if len(sentence) < 3]
@@ -125,8 +103,8 @@ print('Test Output Size:', len(decoder_input_test))
 print('=========================================')
 
 ''''''''''''''''''''' Pad Sequences '''''''''''''''''''''
-contents_pad_len = 500
-title_pad_len = 14
+contents_pad_len = 300
+title_pad_len = 10
 
 encoder_input_train = pad_sequences(encoder_input_train, maxlen=contents_pad_len)
 decoder_input_train = pad_sequences(decoder_input_train, maxlen=title_pad_len)
@@ -173,7 +151,6 @@ def model_encoder_1_decoder_1():
                              validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
                              batch_size=256, callbacks=[early_stopping_callback], epochs=50)
 
-    model.save('plot_TFIDF_LSTM_dropout0/e1d1_emb%dhid%d.h5' % (embedding_dim, hidden_size))
     return history_e1d1
 
 
@@ -314,6 +291,10 @@ if __name__ == "__main__":
     loss_e3d3_list = []
     DROPOUT = 0.5
 
+    plot_dir = 'D:/study/python/UROP/model/neutral/plot/plot_TFIDF_LSTM_dropout%d' % (DROPOUT * 100)
+    if not os.path.exists(plot_dir):
+        os.makedirs(plot_dir)
+
     for embedding_dim in embedding_dim_list:
         for hidden_size in hidden_size_list:
             info_list.append('emb: ' + str(embedding_dim) + ', hidden: ' + str(hidden_size))
@@ -321,6 +302,10 @@ if __name__ == "__main__":
             print('\n=========   e1 d1 Start, Emb: %d Hid: %d    ===========' % (embedding_dim, hidden_size))
             history_e1d1 = model_encoder_1_decoder_1()
             loss_e1d1_list.append(history_e1d1.history['val_loss'])
+
+            plt.plot(history_e1d1.history['loss'], label='train_e1d1')
+            plt.plot(history_e1d1.history['val_loss'], label='test_e1d1')
+            plt.show()
             print('==============   e1 d1 End    ================\n')
 
             print('\n=========   e1 d3 Start, Emb: %d Hid: %d    ===========' % (embedding_dim, hidden_size))
@@ -338,23 +323,23 @@ if __name__ == "__main__":
             loss_e3d3_list.append(history_e3d3.history['val_loss'])
             print('==============   e3 d3 End    ================\n')
 
-            plt.figure()
-            plt.plot(history_e1d1.history['val_loss'], label='test_e1d1')
-            plt.plot(history_e1d3.history['val_loss'], label='test_e1d3')
-            plt.plot(history_e3d1.history['val_loss'], label='test_e3d1')
-            plt.plot(history_e3d3.history['val_loss'], label='test_e3d3')
+            # plt.figure()
+            # plt.plot(history_e1d1.history['val_loss'], label='test_e1d1')
+            # plt.plot(history_e1d3.history['val_loss'], label='test_e1d3')
+            # plt.plot(history_e3d1.history['val_loss'], label='test_e3d1')
+            # plt.plot(history_e3d3.history['val_loss'], label='test_e3d3')
+            #
+            # plt.ylim([1.5, 4])
+            # plt.legend()
+            # plt.title('Loss Graph (Embedding Dim: %d, Hidden Size: %d)' % (embedding_dim, hidden_size))
+            # plt.savefig(plot_dir + '/emb%d_hid%d.png' % (embedding_dim, hidden_size))
 
-            plt.ylim([1.5, 4])
-            plt.legend()
-            plt.title('Loss Graph (Embedding Dim: %d, Hidden Size: %d)' % (embedding_dim, hidden_size))
-            plt.savefig('plot_TFIDF_LSTM_dropout%d/emb%d_hid%d.png' % (DROPOUT * 100, embedding_dim, hidden_size))
-
-    loss_dataframe = []
-    loss_dataframe = pd.DataFrame(loss_dataframe, columns=['info', 'e1d1', 'e1d3', 'e3d1', 'e3d3'])
-    loss_dataframe['info'] = info_list
-    loss_dataframe['e1d1'] = loss_e1d1_list
-    loss_dataframe['e1d3'] = loss_e1d3_list
-    loss_dataframe['e3d1'] = loss_e3d1_list
-    loss_dataframe['e3d3'] = loss_e3d3_list
-    loss_dataframe.to_csv('loss_neutral_TFIDF_LSTM_dropout%d' % (DROPOUT * 100), encoding='utf-8-sig', index=True)
-
+        loss_dataframe = []
+        loss_dataframe = pd.DataFrame(loss_dataframe, columns=['info', 'e1d1', 'e1d3', 'e3d1', 'e3d3'])
+        loss_dataframe['info'] = info_list
+        loss_dataframe['e1d1'] = loss_e1d1_list
+        loss_dataframe['e1d3'] = loss_e1d3_list
+        loss_dataframe['e3d1'] = loss_e3d1_list
+        loss_dataframe['e3d3'] = loss_e3d3_list
+        loss_dataframe.to_csv('D:/study/python/UROP/model/neutral/loss/loss_TFIDF_LSTM_dropout%d.csv' % (DROPOUT * 100),
+                              encoding='utf-8-sig', index=True)

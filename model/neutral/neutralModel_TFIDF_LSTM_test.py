@@ -1,9 +1,9 @@
+import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from keras.callbacks import EarlyStopping
 from sklearn.feature_extraction.text import TfidfVectorizer
-from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from keras.models import Model
 from keras.layers import Input, LSTM, Dense, Embedding
@@ -12,6 +12,9 @@ from keras.layers import Input, LSTM, Dense, Embedding
 csv_read_neutral = 'D:/study/python/UROP/analyzing/analyzed_naverNews.csv'
 data = pd.read_csv(csv_read_neutral)
 
+''''''''''''''''''''' Add SOS, EOS Token in Decoder Input, Output '''''''''''''''''''''
+data['decoder_input'] = data['title'].apply(lambda x: 'sostoken ' + x)
+data['decoder_target'] = data['title'].apply(lambda x: x + ' eostoken')
 
 ''''''''''''''''''''' Split Encoder, Decoder '''''''''''''''''''''
 encoder_input = np.array(data['contents'])
@@ -49,7 +52,7 @@ print('=========================================')
 
 ''''''''''''''''''''' Re-Tokenize by Checking Contents Word Frequency : Contents '''''''''''''''''''''
 # Tokenize Contents
-contents_vocab = 30000
+contents_vocab = 22000
 contents_tokenizer = TfidfVectorizer(max_features=contents_vocab)
 contents_tokenizer.fit(encoder_input_train)
 
@@ -60,7 +63,8 @@ encoder_input_test = contents_tokenizer.transform(encoder_input_test).toarray()
 ''''''''''''''''''''' Tokenize : Title '''''''''''''''''''''
 title_tokenizer = TfidfVectorizer()
 title_tokenizer.fit(decoder_input_train)
-total_cnt = len(contents_tokenizer.vocabulary_)
+
+total_cnt = len(title_tokenizer.vocabulary_)
 
 print('=========================================')
 print('Analyze Title Token')
@@ -68,10 +72,9 @@ print('Total Word Num:', total_cnt)
 print('=========================================')
 
 ''''''''''''''''''''' Re-Tokenize by Checking Contents Word Frequency : Title '''''''''''''''''''''
-title_vocab = 5000
+title_vocab = 10300
 title_tokenizer = TfidfVectorizer(max_features=title_vocab)
-title_tokenizer.fit(decoder_input_train)
-title_tokenizer.fit(decoder_target_train)
+title_tokenizer.fit(decoder_input_train + decoder_target_train)
 
 ''''''''''''''''''''' Text to Sequence : Title '''''''''''''''''''''
 decoder_input_train = title_tokenizer.transform(decoder_input_train).toarray()
@@ -100,8 +103,8 @@ print('Test Output Size:', len(decoder_input_test))
 print('=========================================')
 
 ''''''''''''''''''''' Pad Sequences '''''''''''''''''''''
-contents_pad_len = 500
-title_pad_len = 14
+contents_pad_len = 300
+title_pad_len = 10
 
 encoder_input_train = pad_sequences(encoder_input_train, maxlen=contents_pad_len)
 decoder_input_train = pad_sequences(decoder_input_train, maxlen=title_pad_len)
