@@ -159,11 +159,17 @@ decoder_outputs = decoder_dense(decoder_outputs)
 ''''''''''''''''''''' Encoder + Decoder Model '''''''''''''''''''''
 model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 model.compile(optimizer='rmsprop', loss='sparse_categorical_crossentropy')
-early_stopping_callback = EarlyStopping(monitor='val_loss', patience=10)
-model.fit(x=[encoder_input_train, decoder_input_train], y=decoder_target_train,
-          validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
-          batch_size=256, callbacks=[early_stopping_callback], epochs=100)
+early_stopping_callback = EarlyStopping(monitor='val_loss', patience=20)
+history_e1d1 = model.fit(x=[encoder_input_train, decoder_input_train], y=decoder_target_train,
+                         validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
+                         batch_size=256, callbacks=[early_stopping_callback], epochs=500)
 model.summary()
+
+# plt.figure()
+# plt.plot(history_e1d1.history['val_loss'], label='test_e1d1')
+# plt.legend()
+# plt.title('Loss Graph (Embedding Dim: %d, Hidden Size: %d)' % (embedding_dim, hidden_size))
+# plt.show()
 
 ''''''''''''''''''''' Test Model '''''''''''''''''''''
 contents_index_to_word = contents_tokenizer.index_word
@@ -193,6 +199,7 @@ def decode_sequence(input_seq):
 
     target_seq = np.zeros((1, 1))
     target_seq[0, 0] = title_word_to_index['sostoken']
+    target_seq_idx = [1]
 
     decoded_sentence = ' '
 
@@ -200,15 +207,17 @@ def decode_sequence(input_seq):
         output_tokens, h, c = decoder_model.predict([target_seq] + states_value)
         sampled_token_index = np.argmax(output_tokens[0, -1, :])
         sampled_token = title_index_to_word[sampled_token_index + 1]
+        print('Decoder output token: ', sampled_token)
 
-        if sampled_token == 'eostoken' or len(decoded_sentence.split(' ')) > title_pad_len - 1:
+        if sampled_token == 'eostoken' or len(target_seq_idx) > title_pad_len - 1:
             break
 
-        else:
+        elif sampled_token_index not in target_seq_idx:
             decoded_sentence += sampled_token + ' '
 
         target_seq = np.zeros((1, 1))
         target_seq[0, 0] = sampled_token_index
+        target_seq_idx.append(sampled_token_index)
 
         states_value = [h, c]
 
@@ -231,7 +240,7 @@ def seq2summary(input_seq):
     return temp
 
 
-for i in range(500, 600):
+for i in range(20):
     print("뉴스 전문 : ", seq2text(encoder_input_test[i]))
     print("실제 뉴스 제목 :", seq2summary(decoder_input_test[i]))
     print("예측 뉴스 제목 :", decode_sequence(encoder_input_test[i].reshape(1, contents_pad_len)))

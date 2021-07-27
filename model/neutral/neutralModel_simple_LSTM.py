@@ -95,13 +95,16 @@ print('=========================================')
 title_vocab = 3300
 title_tokenizer = Tokenizer(num_words=title_vocab)
 title_tokenizer.fit_on_texts(decoder_input_train)
-title_tokenizer.fit_on_texts(decoder_target_train)
+title_tokenizer.fit_on_texts(decoder_target_train)      ################# Changed ####################
+title_tokenizer.fit_on_texts(decoder_input_test)      ################# Changed ####################
+title_tokenizer.fit_on_texts(decoder_target_test)      ################# Changed ####################
 
 ''''''''''''''''''''' Text to Sequence : Title '''''''''''''''''''''
 decoder_input_train = title_tokenizer.texts_to_sequences(decoder_input_train)
 decoder_target_train = title_tokenizer.texts_to_sequences(decoder_target_train)
 decoder_input_test = title_tokenizer.texts_to_sequences(decoder_input_test)
 decoder_target_test = title_tokenizer.texts_to_sequences(decoder_target_test)
+print(decoder_input_test[0])
 
 ''''''''''''''''''''' Drop If Token Size < 3 '''''''''''''''''''''
 drop_train = [index for index, sentence in enumerate(decoder_input_train) if len(sentence) < 3]
@@ -134,6 +137,7 @@ decoder_target_train = pad_sequences(decoder_target_train, maxlen=title_pad_len)
 encoder_input_test = pad_sequences(encoder_input_test, maxlen=contents_pad_len)
 decoder_input_test = pad_sequences(decoder_input_test, maxlen=title_pad_len)
 decoder_target_test = pad_sequences(decoder_target_test, maxlen=title_pad_len)
+print(decoder_input_test[0])
 
 ''''''''''''''''''''' Build Model '''''''''''''''''''''
 embedding_dim_list = [64, 128, 256]
