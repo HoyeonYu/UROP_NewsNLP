@@ -38,64 +38,71 @@ decoder_target_train = decoder_target[:-test_val]
 encoder_input_test = encoder_input[-test_val:]
 decoder_input_test = decoder_input[-test_val:]
 decoder_target_test = decoder_target[-test_val:]
-
-''''''''''''''''''''' Tokenize : Contents '''''''''''''''''''''
-contents_tokenizer = Tokenizer()
-contents_tokenizer.fit_on_texts(encoder_input_train)
-
-threshold = 5
-total_cnt = len(contents_tokenizer.word_index)
-rare_cnt = 0
-total_freq = 0
-
-for key, value in contents_tokenizer.word_counts.items():
-    total_freq += value
-    if value < threshold:
-        rare_cnt += 1
-
-print('=========================================')
-print('Analyze Contents Token\n')
-print('Total Word Num:', total_cnt)
-print('Frequency < %d: %d (%.2f%%)' % (threshold, rare_cnt, (rare_cnt / total_cnt) * 100))
-print('Frequency >= %d: %d (%.2f%%)' % (threshold, total_cnt - rare_cnt, ((total_cnt - rare_cnt) / total_cnt) * 100))
-print('=========================================')
+#
+# ''''''''''''''''''''' Tokenize : Contents '''''''''''''''''''''
+# contents_tokenizer = Tokenizer()
+# contents_tokenizer.fit_on_texts(encoder_input_train)
+#
+# threshold = 5
+# total_cnt = len(contents_tokenizer.word_index)
+# rare_cnt = 0
+# total_freq = 0
+#
+# for key, value in contents_tokenizer.word_counts.items():
+#     total_freq += value
+#     if value < threshold:
+#         rare_cnt += 1
+#
+# print('=========================================')
+# print('Analyze Contents Token\n')
+# print('Total Word Num:', total_cnt)
+# print('Frequency < %d: %d (%.2f%%)' % (threshold, rare_cnt, (rare_cnt / total_cnt) * 100))
+# print('Frequency >= %d: %d (%.2f%%)' % (threshold, total_cnt - rare_cnt, ((total_cnt - rare_cnt) / total_cnt) * 100))
+# print('=========================================')
 
 ''''''''''''''''''''' Re-Tokenize by Checking Contents Word Frequency : Contents '''''''''''''''''''''
 # Tokenize Contents
 contents_vocab = 22000
 contents_tokenizer = Tokenizer(num_words=contents_vocab)
 contents_tokenizer.fit_on_texts(encoder_input_train)
+contents_vocab = contents_tokenizer.num_words + 1
 
 ''''''''''''''''''''' Text to Sequence : Contents '''''''''''''''''''''
 encoder_input_train = contents_tokenizer.texts_to_sequences(encoder_input_train)
 encoder_input_test = contents_tokenizer.texts_to_sequences(encoder_input_test)
-
-''''''''''''''''''''' Tokenize : Title '''''''''''''''''''''
-title_tokenizer = Tokenizer()
-title_tokenizer.fit_on_texts(decoder_input_train)
-
-threshold = 3
-total_cnt = len(title_tokenizer.word_index)
-rare_cnt = 0
-total_freq = 0
-
-for key, value in title_tokenizer.word_counts.items():
-    total_freq += value
-    if value < threshold:
-        rare_cnt += 1
-
-print('=========================================')
-print('Analyze Title Token\n')
-print('Total Word Num:', total_cnt)
-print('Frequency < %d: %d (%.2f%%)' % (threshold, rare_cnt, (rare_cnt / total_cnt) * 100))
-print('Frequency >= %d: %d (%.2f%%)' % (threshold, total_cnt - rare_cnt, ((total_cnt - rare_cnt) / total_cnt) * 100))
-print('=========================================')
+#
+# ''''''''''''''''''''' Tokenize : Title '''''''''''''''''''''
+# title_tokenizer = Tokenizer()
+# title_tokenizer.fit_on_texts(decoder_input_train)
+#
+# threshold = 3
+# total_cnt = len(title_tokenizer.word_index)
+# rare_cnt = 0
+# total_freq = 0
+#
+# for key, value in title_tokenizer.word_counts.items():
+#     total_freq += value
+#     if value < threshold:
+#         rare_cnt += 1
+#
+# print('=========================================')
+# print('Analyze Title Token\n')
+# print('Total Word Num:', total_cnt)
+# print('Frequency < %d: %d (%.2f%%)' % (threshold, rare_cnt, (rare_cnt / total_cnt) * 100))
+# print('Frequency >= %d: %d (%.2f%%)' % (threshold, total_cnt - rare_cnt, ((total_cnt - rare_cnt) / total_cnt) * 100))
+# print('=========================================')
 
 ''''''''''''''''''''' Re-Tokenize by Checking Contents Word Frequency : Title '''''''''''''''''''''
 title_vocab = 3300
 title_tokenizer = Tokenizer(num_words=title_vocab)
 title_tokenizer.fit_on_texts(decoder_input_train)
 title_tokenizer.fit_on_texts(decoder_target_train)
+title_vocab = title_tokenizer.num_words + 1
+
+print("=================================")
+print('contents_vocab: ', contents_vocab)
+print('title_vocab: ', title_vocab)
+print("=================================")
 
 ''''''''''''''''''''' Text to Sequence : Title '''''''''''''''''''''
 decoder_input_train = title_tokenizer.texts_to_sequences(decoder_input_train)
@@ -103,9 +110,13 @@ decoder_target_train = title_tokenizer.texts_to_sequences(decoder_target_train)
 decoder_input_test = title_tokenizer.texts_to_sequences(decoder_input_test)
 decoder_target_test = title_tokenizer.texts_to_sequences(decoder_target_test)
 
-''''''''''''''''''''' Drop If Token Size < 3 '''''''''''''''''''''
-drop_train = [index for index, sentence in enumerate(decoder_input_train) if len(sentence) < 3]
-drop_test = [index for index, sentence in enumerate(decoder_input_test) if len(sentence) < 3]
+''''''''''''''''''''' Drop If (Contents Token Size < 10), (Title Token Size < 5) '''''''''''''''''''''
+drop_train = [index for index, sentence in enumerate(encoder_input_train) if len(sentence) < 10]
+drop_train += [index for index, sentence in enumerate(decoder_input_train) if len(sentence) < 5]
+drop_train += [index for index, sentence in enumerate(decoder_target_train) if len(sentence) < 5]
+drop_test = [index for index, sentence in enumerate(encoder_input_test) if len(sentence) < 10]
+drop_test += [index for index, sentence in enumerate(decoder_input_test) if len(sentence) < 5]
+drop_test += [index for index, sentence in enumerate(decoder_target_test) if len(sentence) < 5]
 
 encoder_input_train = np.delete(encoder_input_train, drop_train, axis=0)
 decoder_input_train = np.delete(decoder_input_train, drop_train, axis=0)
@@ -128,41 +139,47 @@ contents_pad_len = 300
 title_pad_len = 10
 
 encoder_input_train = pad_sequences(encoder_input_train, maxlen=contents_pad_len)
-decoder_input_train = pad_sequences(decoder_input_train, maxlen=title_pad_len)
-decoder_target_train = pad_sequences(decoder_target_train, maxlen=title_pad_len)
+decoder_input_train = pad_sequences(decoder_input_train, maxlen=title_pad_len, truncating='post')
+decoder_target_train = pad_sequences(decoder_target_train, maxlen=title_pad_len, truncating='post')
 
 encoder_input_test = pad_sequences(encoder_input_test, maxlen=contents_pad_len)
-decoder_input_test = pad_sequences(decoder_input_test, maxlen=title_pad_len)
-decoder_target_test = pad_sequences(decoder_target_test, maxlen=title_pad_len)
+decoder_input_test = pad_sequences(decoder_input_test, maxlen=title_pad_len, truncating='post')
+decoder_target_test = pad_sequences(decoder_target_test, maxlen=title_pad_len, truncating='post')
 
 ''''''''''''''''''''' Build Model '''''''''''''''''''''
 embedding_dim = 128
-hidden_size = 128
+hidden_size = 32
+DROPOUT = 0.4
 
-''''''''''''''''''''' Encoder : LSTM X 1 '''''''''''''''''''''
+''''''''''''''''''''' Encoder : LSTM X 3 '''''''''''''''''''''
 encoder_inputs = Input(shape=(contents_pad_len,))
-enc_emb = Embedding(contents_vocab, embedding_dim)(encoder_inputs)
-encoder_lstm = LSTM(hidden_size, return_state=True, dropout=0.4)
-encoder_outputs, state_h, state_c = encoder_lstm(enc_emb)
-encoder_states = [state_h, state_c]
+enc_emb = Embedding(contents_vocab, embedding_dim, trainable=True)(encoder_inputs)
+
+encoder_lstm1 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
+encoder_output1, state_h1, state_c1 = encoder_lstm1(enc_emb)
+
+encoder_lstm2 = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
+encoder_output2, state_h2, state_c2 = encoder_lstm2(encoder_output1)
+
+encoder_lstm3 = LSTM(hidden_size, return_state=True, return_sequences=True, dropout=DROPOUT)
+encoder_outputs, state_h, state_c = encoder_lstm3(encoder_output2)
 
 ''''''''''''''''''''' Decoder : LSTM X 1 '''''''''''''''''''''
 decoder_inputs = Input(shape=(None,))
-dec_emb_layer = Embedding(title_vocab, embedding_dim)
+dec_emb_layer = Embedding(title_vocab, embedding_dim, trainable=True)
 dec_emb = dec_emb_layer(decoder_inputs)
-decoder_lstm = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=0.4)
-decoder_outputs, _, _ = decoder_lstm(dec_emb, initial_state=encoder_states)
-
+decoder_lstm = LSTM(hidden_size, return_sequences=True, return_state=True, dropout=DROPOUT)
+decoder_outputs, _, _ = decoder_lstm(dec_emb, initial_state=[state_h, state_c])
 decoder_dense = Dense(title_vocab, activation='softmax')
 decoder_outputs = decoder_dense(decoder_outputs)
 
 ''''''''''''''''''''' Encoder + Decoder Model '''''''''''''''''''''
-model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
+model = Model(inputs=[encoder_inputs, decoder_inputs], outputs=decoder_outputs)
 model.compile(optimizer='rmsprop', loss='sparse_categorical_crossentropy')
-early_stopping_callback = EarlyStopping(monitor='val_loss', patience=20)
+early_stopping_callback = EarlyStopping(monitor='val_loss', patience=10)
 history_e1d1 = model.fit(x=[encoder_input_train, decoder_input_train], y=decoder_target_train,
                          validation_data=([encoder_input_test, decoder_input_test], decoder_target_test),
-                         batch_size=256, callbacks=[early_stopping_callback], epochs=500)
+                         batch_size=64, callbacks=[early_stopping_callback], epochs=300)
 model.summary()
 
 # plt.figure()
@@ -175,56 +192,54 @@ model.summary()
 contents_index_to_word = contents_tokenizer.index_word
 title_word_to_index = title_tokenizer.word_index
 title_index_to_word = title_tokenizer.index_word
-print(title_index_to_word)
 
 encoder_model = Model(inputs=encoder_inputs, outputs=[encoder_outputs, state_h, state_c])
 
 decoder_state_input_h = Input(shape=(hidden_size,))
 decoder_state_input_c = Input(shape=(hidden_size,))
-decoder_states_inputs = [decoder_state_input_h, decoder_state_input_c]
+decoder_states_inputs = Input(shape=(contents_pad_len, hidden_size))
 
 dec_emb2 = dec_emb_layer(decoder_inputs)
-decoder_outputs2, state_h2, state_c2 = decoder_lstm(dec_emb2, initial_state=decoder_states_inputs)
-decoder_states = [state_h2, state_c2]
-
+decoder_outputs2, state_h2, state_c2 = decoder_lstm(dec_emb2, initial_state=[decoder_state_input_h,
+                                                                             decoder_state_input_c])
 decoder_outputs2 = decoder_dense(decoder_outputs2)
 
-decoder_model = Model([decoder_inputs] + decoder_states_inputs,
-                      [decoder_outputs2] + decoder_states)
+decoder_model = Model([decoder_inputs] + [decoder_states_inputs, decoder_state_input_h, decoder_state_input_c],
+                      [decoder_outputs2] + [state_h2, state_c2])
 
 
 def decode_sequence(input_seq):
     e_out, e_h, e_c = encoder_model.predict(input_seq)
-    states_value = [e_h, e_c]
 
     target_seq = np.zeros((1, 1))
     target_seq[0, 0] = title_word_to_index['sostoken']
-    target_seq_idx = [1]
+    target_seq_idx = [target_seq[0, 0]]
 
     decoded_sentence = ' '
 
     while True:
-        output_tokens, h, c = decoder_model.predict([target_seq] + states_value)
+        output_tokens, h, c = decoder_model.predict([target_seq] + [e_out, e_h, e_c])
         sampled_token_index = np.argmax(output_tokens[0, -1, :])
-        sampled_token = title_index_to_word[sampled_token_index + 1]
-        print('Decoder output token: ', sampled_token)
 
-        if sampled_token == 'eostoken' or len(target_seq_idx) > title_pad_len - 1:
-            break
+        if sampled_token_index != 0:
+            sampled_token_word = title_index_to_word[sampled_token_index]
 
-        elif sampled_token_index not in target_seq_idx:
-            decoded_sentence += sampled_token + ' '
+            if sampled_token_word == 'eostoken' or len(target_seq_idx) > title_pad_len - 1:
+                break
 
-        target_seq = np.zeros((1, 1))
-        target_seq[0, 0] = sampled_token_index
+            elif sampled_token_index not in target_seq_idx:
+                decoded_sentence += sampled_token_word + ' '
+
+            target_seq = np.zeros((1, 1))
+            target_seq[0, 0] = sampled_token_index
+
         target_seq_idx.append(sampled_token_index)
-
-        states_value = [h, c]
+        e_h, e_c = h, c
 
     return decoded_sentence
 
 
-def seq2text(input_seq):
+def seq2contents(input_seq):
     temp = ''
     for i in input_seq:
         if i != 0:
@@ -232,16 +247,17 @@ def seq2text(input_seq):
     return temp
 
 
-def seq2summary(input_seq):
+def seq2title(input_seq):
     temp = ''
     for i in input_seq:
-        if (i != 0 and i != title_word_to_index['sostoken']) and i != title_word_to_index['eostoken']:
-            temp = temp + title_index_to_word[i] + ' '
+        if i == 0:
+            continue
+        temp = temp + title_index_to_word[i] + ' '
     return temp
 
 
 for i in range(20):
-    print("뉴스 전문 : ", seq2text(encoder_input_test[i]))
-    print("실제 뉴스 제목 :", seq2summary(decoder_input_test[i]))
+    print("뉴스 전문 : ", seq2contents(encoder_input_test[i]))
+    print("실제 뉴스 제목 :", seq2title(decoder_input_test[i]))
     print("예측 뉴스 제목 :", decode_sequence(encoder_input_test[i].reshape(1, contents_pad_len)))
     print("\n")
